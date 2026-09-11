@@ -1,28 +1,90 @@
 {% extends "base.html" %}
-{% block title %}{{ action }} Task — TaskManager{% endblock %}
+{% block title %}{% if action == "Create" %}New Task{% else %}Edit Task{% endif %} — TaskFlow{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <span class="breadcrumb"><a href="{% url 'tasks:project_detail' project.pk %}">{{ project.name }}</a> &rsaquo;</span>
-    <h1>{{ action }} Task</h1>
-  </div>
-  <a href="{% url 'tasks:project_detail' project.pk %}" class="btn btn-outline">Cancel</a>
+<div class="breadcrumb fade-in">
+  <a href="{% url 'tasks:project_list' %}">Projects</a>
+  <span class="breadcrumb-sep">›</span>
+  <a href="{% url 'tasks:project_detail' project.pk %}">{{ project.name }}</a>
+  <span class="breadcrumb-sep">›</span>
+  <span>{% if action == "Create" %}New Task{% else %}Edit Task{% endif %}</span>
 </div>
 
-<div class="form-card">
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {% for field in form %}
+<div class="form-page fade-in">
+  <div class="form-card">
+    <h1 class="form-card-title">
+      {% if action == "Create" %}Add a new task{% else %}Edit task{% endif %}
+    </h1>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="non-field-errors">
+        {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+      </div>
+      {% endif %}
+
       <div class="form-group">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        <label class="form-label" for="{{ form.title.id_for_label }}">
+          Task title <span class="required">*</span>
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}
+        <ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
       </div>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary">{{ action }} Task</button>
-  </form>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
+          {{ form.status }}
+          {% if form.status.errors %}
+          <ul class="errorlist">{% for e in form.status.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.priority.id_for_label }}">Priority</label>
+          {{ form.priority }}
+          {% if form.priority.errors %}
+          <ul class="errorlist">{% for e in form.priority.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.due_date.id_for_label }}">Due Date</label>
+        {{ form.due_date }}
+        {% if form.due_date.errors %}
+        <ul class="errorlist">{% for e in form.due_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.assigned_to.id_for_label }}">Assign To</label>
+        {{ form.assigned_to }}
+        {% if form.assigned_to.errors %}
+        <ul class="errorlist">{% for e in form.assigned_to.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        <p style="font-size:0.78rem;color:var(--text-4);margin-top:5px">
+          Assigned users can view the task and add comments.
+        </p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+          {% if action == "Create" %}Create Task{% else %}Save Changes{% endif %}
+        </button>
+        {% if task %}
+        <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-outline">Cancel</a>
+        {% else %}
+        <a href="{% url 'tasks:project_detail' project.pk %}" class="btn btn-outline">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

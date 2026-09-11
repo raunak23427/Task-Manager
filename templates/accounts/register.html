@@ -1,22 +1,62 @@
-{% extends "base.html" %}
-{% block title %}Register — TaskManager{% endblock %}
+{% extends "base_auth.html" %}
+{% block title %}Create Account — TaskFlow{% endblock %}
 
 {% block content %}
-<div class="auth-card">
-  <h1>Create an account</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {% for field in form %}
+<main class="auth-page">
+  <div class="auth-card">
+    <!-- Brand -->
+    <div class="auth-brand">
+      <div class="logo-mark">T</div>
+      <span class="logo-text">TaskFlow</span>
+    </div>
+
+    <h1 class="auth-heading">Create your account</h1>
+    <p class="auth-subheading">Join TaskFlow and start managing your projects.</p>
+
+    {% if form.non_field_errors %}
+    <div class="non-field-errors">
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
       <div class="form-group">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+        <ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
       </div>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary btn-block">Register</button>
-  </form>
-  <p class="auth-footer">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
-</div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+        <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+        <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px">
+        Create Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account?
+      <a href="{% url 'accounts:login' %}">Sign in</a>
+    </div>
+  </div>
+</main>
 {% endblock %}

@@ -1,91 +1,228 @@
 {% extends "base.html" %}
-{% block title %}{{ project.name }} — TaskManager{% endblock %}
+{% block title %}{{ project.name }} — TaskFlow{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <h1>{{ project.name }}</h1>
-    {% if project.description %}
-      <p class="project-desc">{{ project.description }}</p>
-    {% endif %}
-    <span class="task-meta">Owner: {{ project.owner.username }}</span>
-  </div>
-  <div class="btn-group">
+<!-- Breadcrumb -->
+<nav class="breadcrumb fade-in" aria-label="Breadcrumb">
+  <a href="{% url 'tasks:project_list' %}">Projects</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <span>{{ project.name }}</span>
+</nav>
+
+<!-- Project header card -->
+<div class="project-detail-header fade-in">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:0">
+      <h1 class="project-detail-name">{{ project.name }}</h1>
+      {% if project.description %}
+      <p class="project-detail-desc">{{ project.description }}</p>
+      {% endif %}
+      <div class="project-detail-meta">
+        <span class="project-detail-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+          </svg>
+          Owner: <strong>{{ project.owner.username }}</strong>
+        </span>
+        <span class="project-detail-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          {{ tasks|length }} task{{ tasks|length|pluralize }}
+        </span>
+        <span class="project-detail-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Created {{ project.created_at|date:"M d, Y" }}
+        </span>
+      </div>
+    </div>
+    <!-- Owner actions -->
     {% if is_owner %}
-      <a href="{% url 'tasks:task_create' project.pk %}" class="btn btn-primary">+ New Task</a>
-      <a href="{% url 'tasks:project_edit' project.pk %}" class="btn btn-outline">Edit Project</a>
-      <a href="{% url 'tasks:project_delete' project.pk %}" class="btn btn-danger">Delete</a>
+    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+      <a href="{% url 'tasks:project_edit' project.pk %}" class="btn btn-outline btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Edit
+      </a>
+      <a href="{% url 'tasks:project_delete' project.pk %}" class="btn btn-danger btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+        Delete
+      </a>
+    </div>
     {% endif %}
   </div>
+
+  <!-- Create task CTA -->
+  {% if is_owner %}
+  <div class="project-actions">
+    <a href="{% url 'tasks:task_create' project.pk %}" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Add Task
+    </a>
+    <span class="text-muted" style="font-size:0.8rem">Only you (the owner) can add tasks.</span>
+  </div>
+  {% endif %}
 </div>
 
-<!-- Status counts -->
-<div class="status-counts">
-  <div class="status-count-card todo-header">
-    <span class="count-number">{{ counts_by_status.TODO|default:0 }}</span>
-    <span class="count-label">To Do</span>
+<!-- Status count cards -->
+<div class="stat-grid fade-in">
+  <div class="stat-card stat-todo">
+    <div class="stat-card-label">
+      <span class="stat-card-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+      </span>
+      To Do
+    </div>
+    <div class="stat-card-value">{{ counts_by_status.TODO|default:0 }}</div>
   </div>
-  <div class="status-count-card inprogress-header">
-    <span class="count-number">{{ counts_by_status.IN_PROGRESS|default:0 }}</span>
-    <span class="count-label">In Progress</span>
+  <div class="stat-card stat-ip">
+    <div class="stat-card-label">
+      <span class="stat-card-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
+        </svg>
+      </span>
+      In Progress
+    </div>
+    <div class="stat-card-value">{{ counts_by_status.IN_PROGRESS|default:0 }}</div>
   </div>
-  <div class="status-count-card done-header">
-    <span class="count-number">{{ counts_by_status.DONE|default:0 }}</span>
-    <span class="count-label">Done</span>
+  <div class="stat-card stat-done">
+    <div class="stat-card-label">
+      <span class="stat-card-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12l3 3 5-5"/>
+        </svg>
+      </span>
+      Done
+    </div>
+    <div class="stat-card-value">{{ counts_by_status.DONE|default:0 }}</div>
   </div>
 </div>
 
+<!-- Overdue tasks for this project -->
 {% if overdue_tasks %}
-<section class="overdue-banner">
-  <h2>&#9888; Overdue in this project ({{ overdue_tasks|length }})</h2>
-  <ul class="task-list">
+<div class="overdue-section fade-in">
+  <div class="overdue-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    </svg>
+    {{ overdue_tasks|length }} overdue task{{ overdue_tasks|length|pluralize }}
+  </div>
+  <div class="overdue-list">
     {% for task in overdue_tasks %}
-    <li class="task-card task-overdue">
-      <a href="{% url 'tasks:task_detail' task.pk %}"><strong>{{ task.title }}</strong></a>
-      <span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
-      <span class="task-meta">Due {{ task.due_date }}</span>
-      {% if task.assigned_to %}<span class="task-meta">&#8594; {{ task.assigned_to.username }}</span>{% endif %}
-    </li>
+    <div class="overdue-task-card">
+      <a href="{% url 'tasks:task_detail' task.pk %}" class="overdue-task-title">{{ task.title }}</a>
+      <div class="overdue-task-meta">
+        {% if task.due_date %}Due {{ task.due_date }}{% endif %}
+        {% if task.assigned_to %} · Assigned to {{ task.assigned_to.username }}{% endif %}
+        · <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+      </div>
+    </div>
     {% endfor %}
-  </ul>
-</section>
+  </div>
+</div>
 {% endif %}
 
 <!-- Task table -->
-<section>
-  <h2>All Tasks</h2>
+<div class="fade-in">
+  <div class="section-header" style="margin-bottom:14px">
+    <h2 class="section-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      All Tasks
+      <span class="section-chip">{{ tasks|length }}</span>
+    </h2>
+  </div>
+
   {% if tasks %}
-  <table class="task-table">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Status</th>
-        <th>Priority</th>
-        <th>Due Date</th>
-        <th>Assigned To</th>
-        {% if is_owner %}<th>Actions</th>{% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for task in tasks %}
-      <tr>
-        <td><a href="{% url 'tasks:task_detail' task.pk %}">{{ task.title }}</a></td>
-        <td><span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span></td>
-        <td><span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span></td>
-        <td>{{ task.due_date|default:"—" }}</td>
-        <td>{{ task.assigned_to.username|default:"Unassigned" }}</td>
-        {% if is_owner %}
-        <td>
-          <a href="{% url 'tasks:task_edit' task.pk %}" class="btn btn-sm btn-outline">Edit</a>
-          <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-danger">Delete</a>
-        </td>
-        {% endif %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-wrapper">
+    <div style="overflow-x:auto">
+      <table class="task-table" aria-label="Project tasks">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Due Date</th>
+            <th>Assigned To</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+          <tr>
+            <td>
+              <a href="{% url 'tasks:task_detail' task.pk %}" class="task-name-link">{{ task.title }}</a>
+            </td>
+            <td>
+              <span class="badge badge-{{ task.status|lower }}">
+                <span class="badge-dot" aria-hidden="true"></span>
+                {{ task.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+            </td>
+            <td>
+              {% if task.due_date %}
+                <span style="font-size:0.85rem">{{ task.due_date }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if task.assigned_to %}
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem">
+                  <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#4f46e5);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:700;flex-shrink:0;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
+                  {{ task.assigned_to.username }}
+                </span>
+              {% else %}
+                <span class="text-muted">Unassigned</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   {% else %}
-  <p class="empty-msg">No tasks yet. {% if is_owner %}<a href="{% url 'tasks:task_create' project.pk %}">Add the first task</a>.{% endif %}</p>
+  <div class="card">
+    <div class="empty-state" style="padding:40px">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+      </div>
+      <h3 class="empty-title">No tasks yet</h3>
+      <p class="empty-desc">
+        {% if is_owner %}Add the first task to get this project moving.{% else %}The project owner hasn't added any tasks yet.{% endif %}
+      </p>
+      {% if is_owner %}
+      <a href="{% url 'tasks:task_create' project.pk %}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add First Task
+      </a>
+      {% endif %}
+    </div>
+  </div>
   {% endif %}
-</section>
+</div>
 {% endblock %}

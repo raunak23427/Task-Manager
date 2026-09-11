@@ -1,71 +1,171 @@
 {% extends "base.html" %}
-{% block title %}{{ task.title }} — TaskManager{% endblock %}
+{% block title %}{{ task.title }} — TaskFlow{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <span class="breadcrumb"><a href="{% url 'tasks:project_detail' task.project.pk %}">{{ task.project.name }}</a> &rsaquo;</span>
-    <h1>{{ task.title }}</h1>
-  </div>
-  {% if is_owner %}
-  <div class="btn-group">
-    <a href="{% url 'tasks:task_edit' task.pk %}" class="btn btn-outline">Edit Task</a>
-    <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-danger">Delete</a>
-  </div>
-  {% endif %}
-</div>
+<!-- Breadcrumb -->
+<nav class="breadcrumb fade-in" aria-label="Breadcrumb">
+  <a href="{% url 'tasks:project_list' %}">Projects</a>
+  <span class="breadcrumb-sep">›</span>
+  <a href="{% url 'tasks:project_detail' task.project.pk %}">{{ task.project.name }}</a>
+  <span class="breadcrumb-sep">›</span>
+  <span>{{ task.title|truncatechars:40 }}</span>
+</nav>
 
-<div class="task-detail-grid">
-  <!-- Left: task info -->
-  <div class="task-info-card">
-    <dl class="detail-list">
-      <dt>Status</dt>
-      <dd><span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span></dd>
+<div class="task-detail-layout fade-in">
 
-      <dt>Priority</dt>
-      <dd><span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span></dd>
+  <!-- Main panel: title, comments, comment form -->
+  <div class="task-main-panel">
 
-      <dt>Due Date</dt>
-      <dd>{{ task.due_date|default:"Not set" }}</dd>
-
-      <dt>Assigned To</dt>
-      <dd>{{ task.assigned_to.username|default:"Unassigned" }}</dd>
-
-      <dt>Project</dt>
-      <dd><a href="{% url 'tasks:project_detail' task.project.pk %}">{{ task.project.name }}</a></dd>
-
-      <dt>Created</dt>
-      <dd>{{ task.created_at|date:"N j, Y" }}</dd>
-    </dl>
-  </div>
-
-  <!-- Right: comments -->
-  <div class="comments-section">
-    <h2>Comments ({{ task.comments.count }})</h2>
-
-    {% for comment in task.comments.all %}
-    <div class="comment-card">
-      <div class="comment-header">
-        <strong>{{ comment.author.username }}</strong>
-        <span class="comment-time">{{ comment.created_at|date:"N j, Y, g:i a" }}</span>
-      </div>
-      <p class="comment-body">{{ comment.body }}</p>
-    </div>
-    {% empty %}
-    <p class="empty-msg">No comments yet.</p>
-    {% endfor %}
-
-    <div class="comment-form-wrap">
-      <h3>Add a comment</h3>
-      <form method="post" novalidate>
-        {% csrf_token %}
-        {{ comment_form.body }}
-        {% if comment_form.body.errors %}
-          <ul class="errorlist">{% for e in comment_form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    <!-- Task title & badges -->
+    <div class="card" style="margin-bottom:20px">
+      <h1 class="task-detail-title">{{ task.title }}</h1>
+      <div class="task-badges">
+        <span class="badge badge-{{ task.status|lower }}">
+          <span class="badge-dot"></span>
+          {{ task.get_status_display }}
+        </span>
+        <span class="badge badge-{{ task.priority|lower }}">
+          {{ task.get_priority_display }} Priority
+        </span>
+        {% if task.due_date %}
+        <span class="badge" style="background:var(--border-light);color:var(--text-3);border-color:var(--border)">
+          📅 {{ task.due_date }}
+        </span>
         {% endif %}
-        <button type="submit" class="btn btn-primary" style="margin-top:0.5rem">Post Comment</button>
+      </div>
+
+      {% if is_owner %}
+      <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border-light)">
+        <a href="{% url 'tasks:task_edit' task.pk %}" class="btn btn-outline btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Edit Task
+        </a>
+        <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-danger btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Delete
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Comments -->
+    <div style="margin-bottom:20px">
+      <div class="section-header">
+        <h2 class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          Discussion
+          <span class="section-chip">{{ task.comments.count }}</span>
+        </h2>
+      </div>
+
+      {% if task.comments.all %}
+      <div class="comments-wrapper">
+        {% for comment in task.comments.all %}
+        <div class="comment-card">
+          <div class="comment-header">
+            <div class="comment-avatar" aria-hidden="true">{{ comment.author.username|first }}</div>
+            <span class="comment-author">{{ comment.author.username }}</span>
+            <span class="comment-ts">{{ comment.created_at|date:"M d, Y · g:i A" }}</span>
+          </div>
+          <div class="comment-body">{{ comment.body }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card" style="text-align:center;padding:32px">
+        <p style="font-size:0.875rem;color:var(--text-4)">No comments yet. Be the first to add context to this task.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Add comment -->
+    <div class="card">
+      <h3 style="font-size:0.9rem;font-weight:700;color:var(--text-1);margin-bottom:14px">Add a comment</h3>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="{{ comment_form.body.id_for_label }}" style="display:none">Comment</label>
+          {{ comment_form.body }}
+          {% if comment_form.body.errors %}
+          <ul class="errorlist">{% for e in comment_form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button type="submit" class="btn btn-primary">Post Comment</button>
+        </div>
       </form>
     </div>
   </div>
+
+  <!-- Side panel: meta info -->
+  <div class="task-side-panel">
+    <div class="task-meta-card">
+      <div class="task-meta-card-title">Task Details</div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Status</span>
+        <span class="task-meta-val">
+          <span class="badge badge-{{ task.status|lower }}">
+            <span class="badge-dot"></span>{{ task.get_status_display }}
+          </span>
+        </span>
+      </div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Priority</span>
+        <span class="task-meta-val">
+          <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+        </span>
+      </div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Due Date</span>
+        <span class="task-meta-val">
+          {% if task.due_date %}{{ task.due_date }}{% else %}<span class="text-muted">No due date</span>{% endif %}
+        </span>
+      </div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Project</span>
+        <span class="task-meta-val">
+          <a href="{% url 'tasks:project_detail' task.project.pk %}" style="color:var(--primary)">{{ task.project.name }}</a>
+        </span>
+      </div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Assigned To</span>
+        <span class="task-meta-val">
+          {% if task.assigned_to %}
+          <span style="display:inline-flex;align-items:center;gap:6px">
+            <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#4f46e5);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:700;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
+            {{ task.assigned_to.username }}
+          </span>
+          {% else %}
+          <span class="text-muted">Unassigned</span>
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Project Owner</span>
+        <span class="task-meta-val">{{ task.project.owner.username }}</span>
+      </div>
+
+      <div class="task-meta-row">
+        <span class="task-meta-label">Created</span>
+        <span class="task-meta-val" style="font-size:0.8rem">{{ task.created_at|date:"M d, Y" }}</span>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

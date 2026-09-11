@@ -1,14 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Delete Task — TaskManager{% endblock %}
+{% block title %}Delete Task — TaskFlow{% endblock %}
 
 {% block content %}
-<div class="form-card">
-  <h1>Delete "{{ task.title }}"?</h1>
-  <p>This will permanently delete the task and all its comments. This action cannot be undone.</p>
-  <form method="post">
-    {% csrf_token %}
-    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-outline">Cancel</a>
-    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-  </form>
+<div class="confirm-page fade-in">
+  <div class="confirm-card">
+    <div class="confirm-icon-wrap" aria-hidden="true">⚠️</div>
+    <h1 class="confirm-title">Delete this task?</h1>
+    <p class="confirm-desc">
+      You are about to permanently delete <strong>{{ task.title }}</strong>
+      from <strong>{{ task.project.name }}</strong>.
+      All comments on this task will also be removed.
+      <br><br>
+      <strong>This action cannot be undone.</strong>
+    </p>
+    <div class="confirm-actions">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Yes, delete
+        </button>
+      </form>
+      <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </div>
 </div>
 {% endblock %}
