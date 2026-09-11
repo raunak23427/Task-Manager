@@ -1,20 +1,32 @@
 """
 Django settings for taskmanager project.
+
+Environment variables are loaded from .env (never committed).
+See .env.example for the required variables.
 """
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
-# ─── Base ────────────────────────────────────────────────────────────────────
+# ─── Base ─────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-me-in-production")
-DEBUG = os.getenv("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-change-me-in-production-do-not-use-this-key",
+)
 
-# ─── Applications ────────────────────────────────────────────────────────────
+DEBUG = os.environ.get("DEBUG", "True") == "True"
+
+# In production, set ALLOWED_HOSTS via environment variable.
+# Example: ALLOWED_HOSTS=myapp.example.com,www.myapp.example.com
+_allowed = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost")
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
+
+# ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -58,16 +70,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "taskmanager.wsgi.application"
 
 # ─── Database — MySQL ─────────────────────────────────────────────────────────
+# Never use SQLite for this project.
+# All connection details come from environment variables.
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME", "taskmanager"),
-        "USER": os.getenv("DB_USER", "taskuser"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "taskpass"),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-        "PORT": os.getenv("DB_PORT", "3306"),
+        "NAME": os.environ.get("DB_NAME", "taskmanager"),
+        "USER": os.environ.get("DB_USER", "taskuser"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "taskpass"),
+        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+        "PORT": os.environ.get("DB_PORT", "3306"),
         "OPTIONS": {
             "charset": "utf8mb4",
+        },
+        # Use a separate test database so the test runner never
+        # touches production data.
+        "TEST": {
+            "NAME": os.environ.get("DB_TEST_NAME", "test_taskmanager"),
+            "CHARSET": "utf8mb4",
+            "COLLATION": "utf8mb4_unicode_ci",
         },
     }
 }
@@ -86,7 +107,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ─── Static files ────────────────────────────────────────────────────────────
+# ─── Static files ─────────────────────────────────────────────────────────────
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 

@@ -16,8 +16,12 @@ db.sqlite3-journal
 staticfiles/
 media/
 
-# Environment
+# Environment — NEVER commit real secrets
 .env
+
+# Dev/setup helpers (contain passwords, not for submission)
+setup_db.py
+seed_demo.py
 
 # Editors
 .vscode/
