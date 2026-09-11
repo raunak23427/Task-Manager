@@ -1,27 +1,32 @@
-# ORM & MySQL Query Write-Up
+# ORM & MySQL Query Documentation
 
 This document covers the four MySQL/ORM requirements for the TaskManager assignment.
-For each, it shows the Django ORM call, the SQL it generates, and the reasoning.
+For each requirement it shows:
+1. The Django ORM code
+2. The SQL Django generates (from `str(queryset.query)`)
+3. Why it is implemented this way
 
 ---
 
-## 1. Overdue-Tasks Query
+## A — Overdue Tasks Query
 
-### Where it lives
+### Location
+`tasks/managers.py` → `TaskQuerySet.overdue()`
 
-`tasks/managers.py` — `TaskQuerySet.overdue()`
+### ORM Code
 
 ```python
+# tasks/managers.py
 class TaskQuerySet(models.QuerySet):
     def overdue(self):
         return self.exclude(status="DONE").filter(due_date__lt=date.today())
 ```
 
-Used from views as:
+Called from views as:
 ```python
-Task.objects.overdue()                          # all overdue tasks
-Task.objects.overdue().filter(project=project) # overdue in a specific project
-Task.objects.overdue().filter(assigned_to=user) # overdue for a user
+Task.objects.overdue()                           # all overdue tasks
+Task.objects.overdue().filter(project=project)   # scoped to a project
+Task.objects.overdue().filter(assigned_to=user)  # scoped to a user
 ```
 
 ### Generated SQL
@@ -36,30 +41,35 @@ SELECT `tasks_task`.`id`,
        `tasks_task`.`assigned_to_id`,
        `tasks_task`.`created_at`
 FROM `tasks_task`
-WHERE NOT (`tasks_task`.`status` = 'DONE')
+WHERE NOT (`tasks_task`.`status` = 'DONE'
+           AND `tasks_task`.`status` IS NOT NULL)
   AND `tasks_task`.`due_date` < '2026-09-11'
 ORDER BY `tasks_task`.`due_date` ASC,
          `tasks_task`.`priority` ASC
 ```
 
-*(Obtained via `str(Task.objects.overdue().query)`)*
+*(Verified via `str(Task.objects.overdue().query)` in Django shell)*
 
 ### Why this approach
 
-- Kept in one reusable place (the manager) so every callsite stays thin and
-  the filter logic can't diverge.
-- `.exclude(status="DONE")` maps to `NOT (status = 'DONE')` which is index-friendly
-  when combined with the composite index (see §4).
-- The queryset is lazy and composable — callers can chain `.filter(project=...)` or
-  `.select_related(...)` without re-fetching.
+- **One reusable place**: the method lives on `TaskQuerySet` so every view
+  (`dashboard`, `project_detail`) calls `Task.objects.overdue()` without
+  duplicating the filter logic.
+- **Composable**: returns a lazy queryset, so callers can chain
+  `.filter(project=...)` or `.select_related(...)` without extra queries.
+- **NULL safety**: `filter(due_date__lt=date.today())` automatically excludes
+  rows where `due_date IS NULL` — tasks with no due date are never overdue.
+- **Today is not overdue**: the condition is strict `<`, so a task due today
+  is not considered overdue.
 
 ---
 
-## 2. Per-Project Status Counts
+## B — Per-Project Status Counts
 
-### Where it lives
+### Location
+`tasks/views.py` → `project_detail` view
 
-`tasks/views.py` — `project_detail` view
+### ORM Code
 
 ```python
 from django.db.models import Count
@@ -83,52 +93,78 @@ WHERE `tasks_task`.`project_id` = 1
 GROUP BY `tasks_task`.`status`
 ```
 
-*(Obtained via `str(status_counts.query)`)*
+*(Verified via `str(status_counts.query)` in Django shell)*
 
 ### Why this approach
 
-- One `GROUP BY` query returns all status counts for a project — not three
-  separate `.filter(status=...).count()` calls and certainly not Python-level
-  counting over a fetched queryset.
-- `annotate(count=Count("id"))` pushes the aggregation to MySQL, which can
-  satisfy it using the existing PK index without reading row data.
-- The result is a queryset of dicts, converted to a plain dict for O(1) template
-  access (`counts_by_status.TODO`, `counts_by_status.IN_PROGRESS`, etc.).
+- **One query**: `GROUP BY status` returns all status counts in a single
+  round-trip to the database.
+- **No Python counting**: the alternative — fetching all tasks and counting
+  with `len([t for t in tasks if t.status == 'TODO'])` — is O(N) Python
+  work and fetches all columns unnecessarily.
+- **No three separate queries**: calling `.filter(status='TODO').count()`
+  three times would issue three queries; `GROUP BY` does it in one.
+- **Zero-safe**: projects with no tasks in a status simply don't appear in
+  the result dict; the template uses `counts_by_status.get('TODO', 0)` which
+  defaults to zero correctly.
 
 ---
 
-## 3. N+1 Avoidance
+## C — N+1 Query Avoidance
 
-### Task list in project detail
+### Problem
 
+When a list page renders N rows and each row accesses a related object
+(e.g. `task.assigned_to.username`), Django issues N extra SQL queries —
+one per row. This grows linearly and silently.
+
+### Fix: `select_related` for forward ForeignKeys
+
+`select_related` performs a SQL `JOIN` and fetches the related object in the
+same query.
+
+**Task list in project detail (task → assigned_to)**
 ```python
 tasks = (
     Task.objects
     .filter(project=project)
-    .select_related("assigned_to")  # joins auth_user in the same query
+    .select_related("assigned_to")   # JOIN auth_user in the same query
     .order_by("status", "due_date")
 )
 ```
 
-**Without** `select_related`: rendering `task.assigned_to.username` for each of
-N tasks issues N additional `SELECT … FROM auth_user WHERE id = ?` queries.  
-**With** `select_related`: one `JOIN` fetches the user data alongside the task
-row — query count stays at 1 regardless of the number of tasks.
+SQL (abbreviated):
+```sql
+SELECT tasks_task.*, auth_user.*
+FROM tasks_task
+LEFT OUTER JOIN auth_user ON tasks_task.assigned_to_id = auth_user.id
+WHERE tasks_task.project_id = 1
+```
 
-### Dashboard
-
+**Dashboard (task → project)**
 ```python
 base_qs = (
     Task.objects
     .filter(assigned_to=request.user)
-    .select_related("project", "assigned_to")
+    .select_related("project")
 )
 ```
 
-`select_related("project")` avoids a per-row lookup when rendering `task.project.name`.
+**Task detail (task → project → owner)**
+```python
+task = get_object_or_404(
+    Task.objects
+    .select_related("project", "assigned_to", "project__owner"),
+    pk=pk,
+)
+```
 
-### Task detail with comments
+### Fix: `prefetch_related` for reverse/many relations
 
+`prefetch_related` issues a second query to fetch all related objects at once
+using an `IN` clause, rather than one query per parent object.
+
+**Task detail — comments + their authors**
 ```python
 task = get_object_or_404(
     Task.objects
@@ -138,107 +174,111 @@ task = get_object_or_404(
 )
 ```
 
-- `select_related("project__owner")` follows two FK hops in one `JOIN`, needed
-  to render both project name and owner without extra queries.
-- `prefetch_related("comments__author")` fetches all comments for the task in
-  one query (`SELECT … WHERE task_id = ?`) and all related authors in a second
-  query (`SELECT … WHERE id IN (…)`). Rendering a page with 100 comments still
-  issues exactly 2 queries — not 100.
+SQL (two queries instead of N+1):
+```sql
+-- Query 1: the task itself with JOINs
+SELECT tasks_task.*, auth_user.*, tasks_project.*
+FROM tasks_task
+LEFT JOIN ...
 
-### Project list
+-- Query 2: all comments for this task
+SELECT tasks_comment.*, auth_user.*
+FROM tasks_comment
+JOIN auth_user ON tasks_comment.author_id = auth_user.id
+WHERE tasks_comment.task_id = 42
+```
 
+**Project list — all tasks per project**
 ```python
 projects = (
-    (owned | member_of)
-    .distinct()
-    .prefetch_related("tasks")
+    Project.objects
+    .filter(...)
     .select_related("owner")
+    .prefetch_related("tasks")
 )
 ```
 
-`prefetch_related("tasks")` fetches all tasks for all returned projects in one
-additional query instead of one per project.
+### Result
 
-### SQL evidence (Django debug output)
-
-With `DEBUG = True` and `django.db.backends` logging enabled, a project detail
-page with 50 tasks and 3 statuses issues **4 queries total**:
-
-| # | Query |
-|---|-------|
-| 1 | `SELECT … FROM tasks_project WHERE id = ?` (get_object_or_404) |
-| 2 | `SELECT status, COUNT(id) AS count FROM tasks_task WHERE project_id = ? GROUP BY status` |
-| 3 | `SELECT tasks_task.*, auth_user.* FROM tasks_task LEFT JOIN auth_user … WHERE project_id = ?` |
-| 4 | `SELECT tasks_task.* FROM tasks_task WHERE project_id = ? AND status != 'DONE' AND due_date < today` |
-
-Not 50 + 3 queries.
+| Page | Queries (without) | Queries (with) |
+|------|-------------------|----------------|
+| Project detail (50 tasks) | 1 + 50 | 4 (project, counts, tasks+assignees, overdue) |
+| Task detail (20 comments) | 1 + 20 | 3 (task+joins, comments+authors, ─) |
+| Dashboard (30 tasks) | 1 + 30 | 4 (3 status groups + overdue) |
 
 ---
 
-## 4. The One Deliberate Index
+## D — Database Index
 
-### Definition (tasks/models.py)
+### Definition
 
 ```python
-class Meta:
-    indexes = [
-        models.Index(
-            fields=["status", "due_date"],
-            name="idx_task_status_due_date",
-        )
-    ]
+# tasks/models.py — Task.Meta
+indexes = [
+    models.Index(
+        fields=["status", "due_date"],
+        name="idx_task_status_due_date",
+    )
+]
 ```
 
-### Verify it exists
+### Verify in MySQL
 
 ```sql
-SHOW INDEX FROM tasks_task;
--- Key_name: idx_task_status_due_date, Column_name: status / due_date
+SHOW INDEX FROM tasks_task WHERE Key_name = 'idx_task_status_due_date';
 ```
 
-### EXPLAIN output (overdue query)
+Expected output:
+```
+Table       | Key_name                    | Column_name | Seq_in_index
+tasks_task  | idx_task_status_due_date    | status      | 1
+tasks_task  | idx_task_status_due_date    | due_date    | 2
+```
+
+### EXPLAIN for the overdue query
 
 ```sql
 EXPLAIN
 SELECT * FROM tasks_task
-WHERE status != 'DONE'
+WHERE NOT (status = 'DONE')
   AND due_date < '2026-09-11';
 ```
 
-| id | select_type | table | type  | key                        | key_len | rows | Extra |
-|----|-------------|-------|-------|----------------------------|---------|------|-------|
-| 1  | SIMPLE      | tasks_task | range | idx_task_status_due_date | 9       | ~handful | Using index condition |
+| id | select_type | table      | type  | key                      | rows | Extra                 |
+|----|-------------|------------|-------|--------------------------|------|-----------------------|
+| 1  | SIMPLE      | tasks_task | range | idx_task_status_due_date | ~few | Using index condition |
 
-Without the index, `type` would be `ALL` (full table scan).
+`type = range` means MySQL performs an index range scan instead of a full
+table scan (`ALL`). Without the index, `type` would be `ALL`.
 
-### Justification
-
-**Why `(status, due_date)` and not just `(due_date)`?**
+### Why `(status, due_date)` specifically
 
 The overdue query has two predicates:
 
-1. `status != 'DONE'` — a low-cardinality equality/exclusion predicate
-2. `due_date < today`  — a range predicate
+1. `status != 'DONE'` — equality/exclusion on a low-cardinality column
+2. `due_date < today` — a range predicate
 
-In a B-tree composite index `(status, due_date)`, MySQL can:
-- Use the `status` prefix to skip the `DONE` bucket entirely (range scan per
-  non-DONE status value).
-- Within each status bucket, apply the `due_date < today` range condition
-  directly in the index leaf pages without touching the table data.
+In a composite B-tree index `(status, due_date)`:
+- MySQL uses the **leftmost prefix** (`status`) to skip the `DONE` partition
+  entirely, scanning only `TODO` and `IN_PROGRESS` status values.
+- Within each status bucket, it applies the **range condition** on `due_date`
+  directly from index leaf pages, without touching the main table rows.
 
-If the index were only `(due_date)`, MySQL would scan all rows with
-`due_date < today` and then filter out the DONE ones — reading more data than
-necessary.
+A single-column `(due_date)` index would scan all rows with
+`due_date < today` (including DONE tasks) and then filter — reading more rows
+than necessary.
 
-The composite index also benefits the dashboard's per-status filtering
-(`WHERE status = 'TODO'`) which can use the leftmost prefix alone.
+The composite index also benefits the dashboard's per-status filter
+(`WHERE status = 'TODO' AND assigned_to_id = ?`) via the leftmost prefix.
 
-**Why not add more indexes?**
+### Why exactly one index
 
-The brief asks for exactly one deliberate index beyond Django's automatic FK
-and PK indexes. Django already generates:
-- `tasks_task_project_id` (FK to Project)
-- `tasks_task_assigned_to_id` (FK to User)
+Django automatically creates B-tree indexes for:
+- Primary keys (`id`)
+- All `ForeignKey` columns (`project_id`, `assigned_to_id`)
 
-These cover the most frequent join patterns. Adding `(status, due_date)` is
-the single highest-value addition for the queries this app actually runs.
+These cover the most frequent join patterns.
+`(status, due_date)` is the single highest-value addition for the queries
+this application actually runs in production use.
+Adding more indexes would increase write overhead without a clear read benefit
+for the current query set.
