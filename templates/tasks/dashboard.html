@@ -15,7 +15,7 @@
   <div class="stat-card stat-todo anim-1 fade-in">
     <div class="stat-card-label">
       <span class="stat-card-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
         </svg>
       </span>
@@ -27,7 +27,7 @@
   <div class="stat-card stat-ip anim-2 fade-in">
     <div class="stat-card-label">
       <span class="stat-card-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
       </span>
@@ -39,7 +39,7 @@
   <div class="stat-card stat-done anim-3 fade-in">
     <div class="stat-card-label">
       <span class="stat-card-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
       </span>
@@ -51,9 +51,9 @@
 
 <!-- Overdue alert -->
 {% if overdue_tasks %}
-<div class="overdue-section fade-in">
+<div class="overdue-section anim-4 fade-in">
   <div class="overdue-header">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <path stroke-linecap="round" stroke-linejoin="round"
         d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
     </svg>
@@ -75,21 +75,23 @@
 {% endif %}
 
 <!-- To Do -->
-<div class="task-section fade-in">
+<div class="task-section anim-4 fade-in">
   <div class="section-header">
     <h2 class="section-title">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--todo-fg)" stroke-width="2.5">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2.5">
         <circle cx="12" cy="12" r="10"/>
       </svg>
       To Do
       <span class="section-chip">{{ todo_tasks|length }}</span>
     </h2>
-    <a href="{% url 'tasks:project_list' %}" class="btn btn-ghost btn-sm">View all →</a>
+    <a href="{% url 'tasks:project_list' %}" class="btn btn-ghost btn-sm">View all Projects →</a>
   </div>
   <div class="task-list">
     {% for task in todo_tasks %}
-    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card">
-      <span class="task-status-dot dot-todo" aria-hidden="true"></span>
+    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card status-todo">
+      <!-- Clickable completion control -->
+      <span class="task-status-control" title="Mark as done" onclick="completeTask('{% url 'tasks:task_edit' task.pk %}', event)"></span>
+      
       <div class="task-card-body">
         <div class="task-card-title">{{ task.title }}</div>
         <div class="task-card-meta">
@@ -112,7 +114,7 @@
       </div>
     </a>
     {% empty %}
-    <div class="empty-state" style="padding:32px">
+    <div class="empty-state" style="padding:40px 24px">
       <p class="empty-desc">No to-do tasks. You're ahead of schedule! 🎉</p>
     </div>
     {% endfor %}
@@ -120,10 +122,10 @@
 </div>
 
 <!-- In Progress -->
-<div class="task-section fade-in">
+<div class="task-section anim-5 fade-in">
   <div class="section-header">
     <h2 class="section-title">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ip-fg)" stroke-width="2.5">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ip-fg)" stroke-width="2.5">
         <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
       </svg>
       In Progress
@@ -132,8 +134,9 @@
   </div>
   <div class="task-list">
     {% for task in in_progress_tasks %}
-    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card">
-      <span class="task-status-dot dot-in_progress" aria-hidden="true"></span>
+    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card status-in_progress">
+      <span class="task-status-control" title="Mark as done" onclick="completeTask('{% url 'tasks:task_edit' task.pk %}', event)"></span>
+      
       <div class="task-card-body">
         <div class="task-card-title">{{ task.title }}</div>
         <div class="task-card-meta">
@@ -156,7 +159,7 @@
       </div>
     </a>
     {% empty %}
-    <div class="empty-state" style="padding:32px">
+    <div class="empty-state" style="padding:40px 24px">
       <p class="empty-desc">Nothing in progress right now.</p>
     </div>
     {% endfor %}
@@ -164,10 +167,10 @@
 </div>
 
 <!-- Done -->
-<div class="task-section fade-in">
+<div class="task-section anim-5 fade-in">
   <div class="section-header">
     <h2 class="section-title">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--done-fg)" stroke-width="2.5">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--done-fg)" stroke-width="2.5">
         <circle cx="12" cy="12" r="10"/>
         <path stroke-linecap="round" stroke-linejoin="round" d="M8 12l3 3 5-5"/>
       </svg>
@@ -177,17 +180,24 @@
   </div>
   <div class="task-list">
     {% for task in done_tasks %}
-    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card" style="opacity:0.75">
-      <span class="task-status-dot dot-done" aria-hidden="true"></span>
+    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card status-done">
+      <span class="task-status-control" onclick="event.preventDefault();event.stopPropagation();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </span>
       <div class="task-card-body">
-        <div class="task-card-title" style="text-decoration:line-through;color:var(--text-3)">{{ task.title }}</div>
+        <div class="task-card-title">{{ task.title }}</div>
         <div class="task-card-meta">
-          <span class="task-meta-chip">{{ task.project.name }}</span>
+          <span class="task-meta-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7a2 2 0 012-2h4.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0012.414 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
+            </svg>
+            {{ task.project.name }}
+          </span>
         </div>
       </div>
     </a>
     {% empty %}
-    <div class="empty-state" style="padding:32px">
+    <div class="empty-state" style="padding:40px 24px">
       <p class="empty-desc">No completed tasks yet. Keep going!</p>
     </div>
     {% endfor %}

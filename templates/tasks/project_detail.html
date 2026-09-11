@@ -149,55 +149,40 @@
   </div>
 
   {% if tasks %}
-  <div class="table-wrapper">
-    <div style="overflow-x:auto">
-      <table class="task-table" aria-label="Project tasks">
-        <thead>
-          <tr>
-            <th>Task</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Due Date</th>
-            <th>Assigned To</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for task in tasks %}
-          <tr>
-            <td>
-              <a href="{% url 'tasks:task_detail' task.pk %}" class="task-name-link">{{ task.title }}</a>
-            </td>
-            <td>
-              <span class="badge badge-{{ task.status|lower }}">
-                <span class="badge-dot" aria-hidden="true"></span>
-                {{ task.get_status_display }}
-              </span>
-            </td>
-            <td>
-              <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
-            </td>
-            <td>
-              {% if task.due_date %}
-                <span style="font-size:0.85rem">{{ task.due_date }}</span>
-              {% else %}
-                <span class="text-muted">—</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if task.assigned_to %}
-                <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem">
-                  <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#4f46e5);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:600;flex-shrink:0;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
-                  {{ task.assigned_to.username }}
-                </span>
-              {% else %}
-                <span class="text-muted">Unassigned</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="task-list">
+    {% for task in tasks %}
+    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card status-{{ task.status|lower }} anim-{{ forloop.counter|add:0|slice:':1' }}">
+      <!-- Clickable completion control -->
+      <span class="task-status-control" title="Mark as done" onclick="completeTask('{% url 'tasks:task_edit' task.pk %}', event)">
+        {% if task.status == 'DONE' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {% endif %}
+      </span>
+      
+      <div class="task-card-body">
+        <div class="task-card-title">{{ task.title }}</div>
+        <div class="task-card-meta">
+          {% if task.due_date %}
+          <span class="task-meta-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            {{ task.due_date }}
+          </span>
+          {% endif %}
+          <span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
+          <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+          
+          {% if task.assigned_to %}
+          <span class="task-meta-chip" style="margin-left:auto">
+            <span style="width:22px;height:22px;border-radius:50%;background:var(--border-light);display:inline-flex;align-items:center;justify-content:center;color:var(--text-1);font-size:0.65rem;font-weight:600;flex-shrink:0;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
+            {{ task.assigned_to.username }}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
   </div>
 
   {% else %}

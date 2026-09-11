@@ -131,6 +131,56 @@
     if (e.key === 'Escape') closeSidebar();
   });
 })();
+
+async function completeTask(editUrl, event) {
+  event.preventDefault();
+  event.stopPropagation(); // prevent opening the task link
+
+  const card = event.currentTarget.closest('.task-card');
+  if (!card || card.classList.contains('status-done')) return;
+  
+  const control = event.currentTarget;
+  
+  // 1. Visual animation immediately
+  card.classList.remove('status-todo', 'status-in_progress');
+  card.classList.add('status-done');
+  
+  // Add checkmark SVG
+  control.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px;animation:fadeSlideIn 0.2s ease both;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+  
+  try {
+    // 2. Fetch the edit form to get all required fields and CSRF
+    const getRes = await fetch(editUrl);
+    const text = await getRes.text();
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    const form = doc.querySelector('form');
+    if (!form) throw new Error("Form not found");
+    
+    // 3. Update status to DONE
+    const formData = new FormData(form);
+    formData.set('status', 'DONE');
+    
+    // 4. Post the form back
+    await fetch(editUrl, {
+      method: 'POST',
+      body: formData,
+      redirect: 'manual'
+    });
+    
+    // 5. Fade out and remove after a brief pause
+    setTimeout(() => {
+      card.classList.add('task-exit');
+      setTimeout(() => card.remove(), 300);
+    }, 800);
+    
+  } catch (err) {
+    console.error("Failed to complete task:", err);
+    // Revert visual state on error
+    card.classList.remove('status-done');
+    control.innerHTML = '';
+    alert('Failed to complete task. Please try again.');
+  }
+}
 </script>
 
 {% endif %}
