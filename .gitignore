@@ -21,7 +21,6 @@ media/
 
 # Dev/setup helpers (contain passwords, not for submission)
 setup_db.py
-seed_demo.py
 grant_test_db.py
 
 # Editors
