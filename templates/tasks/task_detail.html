@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }} — TaskManager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="breadcrumb"><a href="{% url 'tasks:project_detail' task.project.pk %}">{{ task.project.name }}</a> &rsaquo;</span>
+    <h1>{{ task.title }}</h1>
+  </div>
+  {% if is_owner %}
+  <div class="btn-group">
+    <a href="{% url 'tasks:task_edit' task.pk %}" class="btn btn-outline">Edit Task</a>
+    <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-danger">Delete</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="task-detail-grid">
+  <!-- Left: task info -->
+  <div class="task-info-card">
+    <dl class="detail-list">
+      <dt>Status</dt>
+      <dd><span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span></dd>
+
+      <dt>Priority</dt>
+      <dd><span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span></dd>
+
+      <dt>Due Date</dt>
+      <dd>{{ task.due_date|default:"Not set" }}</dd>
+
+      <dt>Assigned To</dt>
+      <dd>{{ task.assigned_to.username|default:"Unassigned" }}</dd>
+
+      <dt>Project</dt>
+      <dd><a href="{% url 'tasks:project_detail' task.project.pk %}">{{ task.project.name }}</a></dd>
+
+      <dt>Created</dt>
+      <dd>{{ task.created_at|date:"N j, Y" }}</dd>
+    </dl>
+  </div>
+
+  <!-- Right: comments -->
+  <div class="comments-section">
+    <h2>Comments ({{ task.comments.count }})</h2>
+
+    {% for comment in task.comments.all %}
+    <div class="comment-card">
+      <div class="comment-header">
+        <strong>{{ comment.author.username }}</strong>
+        <span class="comment-time">{{ comment.created_at|date:"N j, Y, g:i a" }}</span>
+      </div>
+      <p class="comment-body">{{ comment.body }}</p>
+    </div>
+    {% empty %}
+    <p class="empty-msg">No comments yet.</p>
+    {% endfor %}
+
+    <div class="comment-form-wrap">
+      <h3>Add a comment</h3>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ comment_form.body }}
+        {% if comment_form.body.errors %}
+          <ul class="errorlist">{% for e in comment_form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        <button type="submit" class="btn btn-primary" style="margin-top:0.5rem">Post Comment</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Project — TaskManager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ action }} Project</h1>
+  {% if project %}
+    <a href="{% url 'tasks:project_detail' project.pk %}" class="btn btn-outline">Cancel</a>
+  {% else %}
+    <a href="{% url 'tasks:project_list' %}" class="btn btn-outline">Cancel</a>
+  {% endif %}
+</div>
+
+<div class="form-card">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">{{ action }} Project</button>
+  </form>
+</div>
+{% endblock %}

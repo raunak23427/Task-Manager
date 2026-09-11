@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Projects — TaskManager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Projects</h1>
+  <a href="{% url 'tasks:project_create' %}" class="btn btn-primary">+ New Project</a>
+</div>
+
+{% if projects %}
+<div class="card-grid">
+  {% for project in projects %}
+  <div class="project-card">
+    <div class="project-card-header">
+      <h2><a href="{% url 'tasks:project_detail' project.pk %}">{{ project.name }}</a></h2>
+      {% if project.owner == request.user %}
+        <span class="badge badge-owner">Owner</span>
+      {% else %}
+        <span class="badge badge-member">Member</span>
+      {% endif %}
+    </div>
+    {% if project.description %}
+      <p class="project-desc">{{ project.description|truncatechars:120 }}</p>
+    {% endif %}
+    <div class="project-card-footer">
+      <span class="task-meta">{{ project.tasks.count }} task{{ project.tasks.count|pluralize }}</span>
+      <span class="task-meta">by {{ project.owner.username }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No projects yet. <a href="{% url 'tasks:project_create' %}">Create your first project</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

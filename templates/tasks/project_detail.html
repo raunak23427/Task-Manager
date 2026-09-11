@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — TaskManager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ project.name }}</h1>
+    {% if project.description %}
+      <p class="project-desc">{{ project.description }}</p>
+    {% endif %}
+    <span class="task-meta">Owner: {{ project.owner.username }}</span>
+  </div>
+  <div class="btn-group">
+    {% if is_owner %}
+      <a href="{% url 'tasks:task_create' project.pk %}" class="btn btn-primary">+ New Task</a>
+      <a href="{% url 'tasks:project_edit' project.pk %}" class="btn btn-outline">Edit Project</a>
+      <a href="{% url 'tasks:project_delete' project.pk %}" class="btn btn-danger">Delete</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Status counts -->
+<div class="status-counts">
+  <div class="status-count-card todo-header">
+    <span class="count-number">{{ counts_by_status.TODO|default:0 }}</span>
+    <span class="count-label">To Do</span>
+  </div>
+  <div class="status-count-card inprogress-header">
+    <span class="count-number">{{ counts_by_status.IN_PROGRESS|default:0 }}</span>
+    <span class="count-label">In Progress</span>
+  </div>
+  <div class="status-count-card done-header">
+    <span class="count-number">{{ counts_by_status.DONE|default:0 }}</span>
+    <span class="count-label">Done</span>
+  </div>
+</div>
+
+{% if overdue_tasks %}
+<section class="overdue-banner">
+  <h2>&#9888; Overdue in this project ({{ overdue_tasks|length }})</h2>
+  <ul class="task-list">
+    {% for task in overdue_tasks %}
+    <li class="task-card task-overdue">
+      <a href="{% url 'tasks:task_detail' task.pk %}"><strong>{{ task.title }}</strong></a>
+      <span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
+      <span class="task-meta">Due {{ task.due_date }}</span>
+      {% if task.assigned_to %}<span class="task-meta">&#8594; {{ task.assigned_to.username }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<!-- Task table -->
+<section>
+  <h2>All Tasks</h2>
+  {% if tasks %}
+  <table class="task-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Due Date</th>
+        <th>Assigned To</th>
+        {% if is_owner %}<th>Actions</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td><a href="{% url 'tasks:task_detail' task.pk %}">{{ task.title }}</a></td>
+        <td><span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span></td>
+        <td><span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span></td>
+        <td>{{ task.due_date|default:"—" }}</td>
+        <td>{{ task.assigned_to.username|default:"Unassigned" }}</td>
+        {% if is_owner %}
+        <td>
+          <a href="{% url 'tasks:task_edit' task.pk %}" class="btn btn-sm btn-outline">Edit</a>
+          <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-danger">Delete</a>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-msg">No tasks yet. {% if is_owner %}<a href="{% url 'tasks:task_create' project.pk %}">Add the first task</a>.{% endif %}</p>
+  {% endif %}
+</section>
+{% endblock %}

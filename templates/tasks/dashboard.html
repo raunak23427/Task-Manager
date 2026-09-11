@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — TaskManager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>My Tasks</h1>
+  <a href="{% url 'tasks:project_list' %}" class="btn btn-outline">View Projects</a>
+</div>
+
+{% if overdue_tasks %}
+<section class="overdue-banner">
+  <h2>&#9888; Overdue ({{ overdue_tasks|length }})</h2>
+  <ul class="task-list">
+    {% for task in overdue_tasks %}
+    <li class="task-card task-overdue">
+      <a href="{% url 'tasks:task_detail' task.pk %}"><strong>{{ task.title }}</strong></a>
+      <span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
+      <span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+      <span class="task-meta">{{ task.project.name }} &middot; Due {{ task.due_date }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="kanban">
+  <!-- TO DO -->
+  <div class="kanban-col">
+    <div class="kanban-col-header todo-header">
+      <span>To Do</span><span class="badge-count">{{ todo_tasks|length }}</span>
+    </div>
+    {% for task in todo_tasks %}
+    <div class="kanban-card">
+      <a href="{% url 'tasks:task_detail' task.pk %}">{{ task.title }}</a>
+      <div class="kanban-card-meta">
+        <span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+        {% if task.due_date %}<span class="task-due">Due {{ task.due_date }}</span>{% endif %}
+        <span class="task-project">{{ task.project.name }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <p class="empty-msg">No tasks</p>
+    {% endfor %}
+  </div>
+
+  <!-- IN PROGRESS -->
+  <div class="kanban-col">
+    <div class="kanban-col-header inprogress-header">
+      <span>In Progress</span><span class="badge-count">{{ in_progress_tasks|length }}</span>
+    </div>
+    {% for task in in_progress_tasks %}
+    <div class="kanban-card">
+      <a href="{% url 'tasks:task_detail' task.pk %}">{{ task.title }}</a>
+      <div class="kanban-card-meta">
+        <span class="badge badge-priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+        {% if task.due_date %}<span class="task-due">Due {{ task.due_date }}</span>{% endif %}
+        <span class="task-project">{{ task.project.name }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <p class="empty-msg">No tasks</p>
+    {% endfor %}
+  </div>
+
+  <!-- DONE -->
+  <div class="kanban-col">
+    <div class="kanban-col-header done-header">
+      <span>Done</span><span class="badge-count">{{ done_tasks|length }}</span>
+    </div>
+    {% for task in done_tasks %}
+    <div class="kanban-card kanban-card-done">
+      <a href="{% url 'tasks:task_detail' task.pk %}">{{ task.title }}</a>
+      <div class="kanban-card-meta">
+        <span class="task-project">{{ task.project.name }}</span>
+      </div>
+    </div>
+    {% empty %}
+    <p class="empty-msg">No tasks</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

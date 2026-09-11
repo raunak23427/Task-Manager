@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Delete Task — TaskManager{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <h1>Delete "{{ task.title }}"?</h1>
+  <p>This will permanently delete the task and all its comments. This action cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+  </form>
+</div>
+{% endblock %}
