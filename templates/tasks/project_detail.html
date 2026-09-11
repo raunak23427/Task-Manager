@@ -186,7 +186,7 @@
             <td>
               {% if task.assigned_to %}
                 <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem">
-                  <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#4f46e5);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:700;flex-shrink:0;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
+                  <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#4f46e5);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.65rem;font-weight:600;flex-shrink:0;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
                   {{ task.assigned_to.username }}
                 </span>
               {% else %}
