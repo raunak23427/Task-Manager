@@ -847,7 +847,7 @@ select {
   font-size: 0.85rem; color: var(--ov-fg); font-weight: 400;
   display: flex; align-items: center; gap: 6px;
 }
-.errorlist li::before { content: "⚠"; font-size: 0.75em; }
+.errorlist li::before { content: "•"; font-size: 1.2em; line-height: 1; margin-right: 4px; }
 .form-actions {
   display: flex; gap: 12px; align-items: center;
   margin-top: 36px; padding-top: 24px;

@@ -1,16 +1,16 @@
-# TaskFlow 🚀
+# TaskFlow
 
-Hey! Welcome to TaskFlow. I built this multi-user task management application using Django and MySQL. The goal was to create a clean, structured workspace for managing projects and collaborating, but more importantly, I wanted to focus on getting the backend architecture right—specifically around secure permissions, efficient ORM queries, and preventing N+1 database issues.
+TaskFlow is a multi-user task management application built with Django and MySQL. It provides a structured workspace for managing projects, assigning tasks, tracking progress, and collaborating through comments.
 
-Plus, I gave the frontend a modern SaaS-inspired UI because a good project shouldn't have to look like a standard bootstrap template.
+The project focuses on clean backend architecture, secure permission enforcement, efficient Django ORM queries, and a modern productivity-focused user interface. I built this to demonstrate a complete Django workflow with a polished, SaaS-inspired frontend because a good backend project shouldn't have to look like a standard bootstrap template.
 
 ---
 
-## 🎮 Demo: How it Works
+## Demo: How it Works
 
 To get a feel for how the app flows, here is the core user loop:
 
-1. **Creating the Workspace**: You register/log in and arrive at your personal Dashboard. From here, you can create a new Project (e.g., "Q3 Launch"). As the creator, you are the **Owner**.
+1. **Creating the Workspace**: You register or log in and arrive at your personal Dashboard. From here, you can create a new Project (e.g., "Q3 Launch"). As the creator, you are the **Owner**.
 2. **Fleshing it out**: Inside the project, you start adding Tasks. You set priorities, due dates, and statuses. 
 3. **Delegation**: You assign one of the tasks to your teammate, Bob. 
 4. **The Member Experience**: Bob logs in. He doesn't own the project, so he can't randomly delete it or edit the project details. However, because he's assigned to a task, he is a **Member**. He can view the project, check his task, and drop a comment ("I'm starting this today!").
@@ -18,92 +18,611 @@ To get a feel for how the app flows, here is the core user loop:
 
 ---
 
-## ✨ Features & Permissions
+## Features
 
-### Core Functionality
-- **Auth**: Standard Django auth (login, registration, logout, protected routes).
-- **Projects & Tasks**: Full CRUD for projects and tasks. Tasks track Status (To Do, In Progress, Done), Priority, and Due Dates.
-- **Collaboration**: Append-only commenting system for task discussion.
-- **Interactive Dashboard**: Aggregated stats, overdue task alerts, and quick-completion UI.
+### Authentication
 
-### Permission Model (Strict Backend Enforcement)
-I wanted to make sure security wasn't just a frontend illusion. If you try to bypass the UI and hit an endpoint you shouldn't, Django will block you with an HTTP `403 Forbidden`.
+- User registration
+- User login
+- User logout
+- Django's built-in authentication system
+- Automatic login after registration
+- Protected application views for authenticated users
+
+### Projects
+
+Users can:
+
+- Create projects
+- View their projects
+- View projects where they are members
+- Edit projects they own
+- Delete projects they own
+
+### Tasks
+
+Each project can contain multiple tasks.
+
+Tasks support:
+
+- Title
+- Description
+- Status
+- Priority
+- Due date
+- Project association
+- User assignment
+
+Available statuses:
+
+- To Do
+- In Progress
+- Done
+
+Available priorities:
+
+- Low
+- Medium
+- High
+
+### Task Collaboration
+
+Users who are members of a project can:
+
+- View project tasks
+- Open task details
+- Add comments
+
+Comments are append-only and cannot be edited or deleted.
+
+### Dashboard
+
+The dashboard provides an overview of the authenticated user's tasks.
+
+It includes:
+
+- To Do tasks
+- In Progress tasks
+- Completed tasks
+- Overdue tasks
+- Task statistics
+- Quick task completion
+
+Tasks can be marked as completed directly from the dashboard.
+
+### Permissions
+
+TaskFlow enforces permissions at the Django backend/view layer.
+
+The permission model is:
 
 | Action | Project Owner | Project Member |
 |--------|---------------|----------------|
-| View project / tasks | Yes | Yes |
-| Edit / Delete project | Yes | **No** |
-| Create / Edit / Delete task | Yes | **No** |
-| Add a comment | Yes | Yes |
+| View project | Yes | Yes |
+| Edit project | Yes | No |
+| Delete project | Yes | No |
+| Create task | Yes | No |
+| Edit task | Yes | No |
+| Delete task | Yes | No |
+| View task | Yes | Yes |
+| Add comment | Yes | Yes |
 
-*(A user automatically becomes a "Member" if they are assigned to at least one task in the project).*
+A project member is a user assigned to at least one task within that project.
 
----
-
-## 🛠 Under the Hood
-
-### Tech Stack
-- **Backend**: Python 3.9+, Django 4.2 LTS
-- **Database**: MySQL 8.0
-- **Frontend**: Vanilla HTML/CSS/JS (Custom CSS variables, no heavy frameworks). Typography by Inter.
-
-### Database Optimizations
-I spent a good amount of time ensuring the database isn't doing unnecessary work:
-
-1. **N+1 Query Prevention**: Hitting the DB in a loop is a classic mistake. I heavily used `select_related()` (for foreign keys like project and assigned user) and `prefetch_related()` (for reverse relations like comments) to fetch everything in large, efficient batches.
-2. **Aggregation**: Instead of pulling all tasks into Python just to count them, I used Django's `.annotate(Count('id'))` to let MySQL do the heavy lifting for project status counts.
-3. **Custom QuerySets**: I wrote a custom manager method `Task.objects.overdue()` to cleanly filter tasks that have missed their due date and aren't marked as "Done".
-4. **Composite Indexing**: Added a composite index on `(status, due_date)` in the MySQL database to speed up the overdue task queries and dashboard rendering.
+Unauthorized edit and delete requests are rejected with an HTTP `403 Forbidden` response.
 
 ---
 
-## 🚀 Getting Started Locally
+## Technology Stack
 
-Want to spin this up on your own machine? Here is the step-by-step:
+### Backend
 
-### 1. Database Setup
-Make sure you have MySQL 8.0 running. Open your MySQL CLI and run:
-```sql
-CREATE DATABASE taskmanager;
-CREATE USER 'taskuser'@'localhost' IDENTIFIED BY 'taskpass';
-GRANT ALL PRIVILEGES ON taskmanager.* TO 'taskuser'@'localhost';
-FLUSH PRIVILEGES;
+- Python 3
+- Django 4.2 LTS
+
+### Database
+
+- MySQL 8.0
+
+### Frontend
+
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Custom CSS variables
+- Responsive layouts
+- CSS transitions and micro-interactions
+
+### Typography
+
+- Inter
+
+---
+
+## Project Structure
+
+```text
+taskmanager/
+│
+├── taskmanager/
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+│
+├── accounts/
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/
+│
+├── tasks/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   ├── managers.py
+│   └── templates/
+│
+├── templates/
+│   └── base.html
+│
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example
+├── manage.py
+├── seed_demo.py
+├── README.md
+└── QUERIES.md
 ```
 
-### 2. Install Dependencies
-Clone the repo, set up a virtual environment, and install the requirements:
+---
+
+## Data Model
+
+TaskFlow uses three core application models.
+
+```text
+User
+ │
+ ├── owns ──> Project
+ │
+ └── assigned to ──> Task
+                       │
+                       └── has ──> Comment
+```
+
+### Project
+
+A project belongs to an owner and contains multiple tasks.
+
+### Task
+
+A task belongs to a project and can optionally be assigned to a user.
+
+### Comment
+
+A comment belongs to a task and records its author and creation time.
+
+---
+
+## Database Optimization
+
+The project demonstrates efficient Django ORM usage and includes several query optimizations.
+
+### Overdue Tasks
+
+A custom queryset method is used to retrieve overdue tasks while excluding completed tasks.
+
+```python
+Task.objects.overdue()
+```
+
+The query checks for:
+
+* A due date before today's date
+* A status other than `DONE`
+
+---
+
+### Project Status Counts
+
+Task counts by status are calculated using Django's `annotate()` and `Count()` functionality rather than counting tasks in Python.
+
+```python
+Task.objects.filter(
+    project=project
+).values(
+    'status'
+).annotate(
+    count=Count('id')
+)
+```
+
+This allows the database to perform the aggregation efficiently.
+
+---
+
+### N+1 Query Prevention
+
+Related objects are loaded efficiently using:
+
+```python
+select_related()
+```
+
+and
+
+```python
+prefetch_related()
+```
+
+Examples include:
+
+```python
+Task.objects.filter(
+    project=project
+).select_related('assigned_to')
+```
+
+and:
+
+```python
+Task.objects.select_related(
+    'project',
+    'assigned_to'
+).prefetch_related(
+    'comments__author'
+)
+```
+
+This reduces unnecessary database queries when displaying related objects.
+
+---
+
+### Composite Database Index
+
+The `Task` model includes a composite index on:
+
+```text
+(status, due_date)
+```
+
+Index name:
+
+```text
+idx_task_status_due_date
+```
+
+This index supports queries involving task status and due dates, including overdue-task filtering.
+
+---
+
+## UI / UX
+
+TaskFlow uses a modern productivity-app inspired interface.
+
+### Design System
+
+* **Primary:** `#FFB81C`
+* **Background:** `#F5F2EA`
+* **Sidebar:** `#292827`
+* Rounded cards and controls
+* Soft shadows
+* Clean typography
+* Minimal interface
+* Smooth hover effects
+* Fast micro-interactions
+* Responsive layouts
+
+The interface is designed to provide a polished task-management experience while keeping the application functional and easy to navigate.
+
+---
+
+## Setup
+
+### Prerequisites
+
+Make sure the following are installed:
+
+* Python 3.9+
+* Django 4.2
+* MySQL 8.0
+* Git
+
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone <your-repository-url>
+cd taskmanager
+```
+
+---
+
+## 2. Create a Virtual Environment
+
+### Windows
+
 ```bash
 python -m venv venv
-source venv/bin/activate  # Or venv\Scripts\activate on Windows
+venv\Scripts\activate
+```
+
+### macOS / Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Environment Variables
-Create a `.env` file in the root directory (use `.env.example` as a guide) so Django can connect to your local MySQL instance.
+---
 
-### 4. Migrate & Seed
-Set up the tables and load some dummy data to play with:
-```bash
-python manage.py migrate
-python seed_demo.py
-```
-*(The seeder creates users like `alice` and `bob` with the password `password123`, plus an `admin` account).*
+## 4. Configure MySQL
 
-### 5. Run the Server
-```bash
-python manage.py runserver
+Create the database and user:
+
+```sql
+CREATE DATABASE taskmanager;
+
+CREATE USER 'taskuser'@'localhost'
+IDENTIFIED BY 'taskpass';
+
+GRANT ALL PRIVILEGES
+ON taskmanager.*
+TO 'taskuser'@'localhost';
+
+FLUSH PRIVILEGES;
 ```
-Head over to `http://127.0.0.1:8000/` and you're good to go!
 
 ---
 
-## 🧪 Testing
+## 5. Configure Environment Variables
 
-I wrote 46 automated tests covering models, views, forms, and all the permission edge cases. You can run the test suite to verify everything is working:
+Create a `.env` file based on `.env.example`.
+
+Example:
+
+```env
+DB_NAME=taskmanager
+DB_USER=taskuser
+DB_PASSWORD=taskpass
+DB_HOST=localhost
+DB_PORT=3306
+```
+
+Do not commit your actual `.env` file to GitHub.
+
+---
+
+## 6. Run Migrations
+
+```bash
+python manage.py migrate
+```
+
+---
+
+## 7. Create an Admin User
+
+```bash
+python manage.py createsuperuser
+```
+
+Follow the prompts to create the Django administrator account.
+
+---
+
+## 8. Seed Demo Data
+
+The project includes a demo seed script for quickly creating sample users, projects, and tasks.
+
+```bash
+python seed_demo.py
+```
+
+---
+
+## Demo Accounts
+
+The project includes three demo profiles for testing and demonstration:
+
+| Username | Password | Role |
+|---|---|---|
+| `alice` | `password123` | Project Owner |
+| `bob` | `password123` | Project Member |
+| `admin` | `password123` | Administrator |
+
+### Demo Permission Flow
+
+Use `alice` to demonstrate project and task management:
+
+- Create projects
+- Create tasks
+- Assign tasks to `bob`
+- Edit and delete owned projects and tasks
+
+Use `bob` to demonstrate member permissions:
+
+- View projects where assigned
+- View assigned tasks
+- Add comments
+- Attempt restricted edit/delete operations and verify that Django returns `403 Forbidden`
+
+Use `admin` to access the Django administration interface.
+
+These credentials are for local development and demonstration only.
+
+---
+
+## 9. Start the Development Server
+
+```bash
+python manage.py runserver
+```
+
+Open the application at:
+
+```text
+http://127.0.0.1:8000/
+```
+
+---
+
+## Testing
+
+Run the Django test suite with:
 
 ```bash
 python manage.py test tasks --verbosity=2
 ```
 
+The tests cover areas including:
+
+* Models
+* Views
+* Forms
+* Authentication
+* Permissions
+* Task functionality
+
 ---
-*Built with coffee and late nights as a deep dive into Django architecture.*
+
+## Permission Testing
+
+The permission system can be verified using two different users.
+
+### Example
+
+1. Log in as the project owner.
+2. Create a project.
+3. Create a task.
+4. Assign the task to another user.
+5. Log out.
+6. Log in as the assigned member.
+7. Open the project/task.
+8. Add a comment.
+9. Attempt to edit or delete the project/task directly.
+
+The member should be able to view and comment but should receive:
+
+```text
+HTTP 403 Forbidden
+```
+
+when attempting unauthorized operations.
+
+---
+
+## Verification Checklist
+
+Before submitting the project, verify:
+
+* [ ] Registration works
+* [ ] Login works
+* [ ] Logout works
+* [ ] Project creation works
+* [ ] Project editing works
+* [ ] Project deletion works
+* [ ] Task creation works
+* [ ] Task assignment works
+* [ ] Task status changes work
+* [ ] Task priority works
+* [ ] Due dates work
+* [ ] Comments work
+* [ ] Overdue tasks appear correctly
+* [ ] Project status counts are correct
+* [ ] Members cannot edit projects
+* [ ] Members cannot delete projects
+* [ ] Members cannot create tasks
+* [ ] Unauthorized requests return HTTP 403
+* [ ] `select_related()` is used where appropriate
+* [ ] `prefetch_related()` is used where appropriate
+* [ ] Composite database index exists
+* [ ] Tests pass
+* [ ] `.env` is not committed
+
+---
+
+## Useful Django Commands
+
+Run migrations:
+
+```bash
+python manage.py migrate
+```
+
+Create migrations:
+
+```bash
+python manage.py makemigrations
+```
+
+Create an admin account:
+
+```bash
+python manage.py createsuperuser
+```
+
+Run the development server:
+
+```bash
+python manage.py runserver
+```
+
+Run tests:
+
+```bash
+python manage.py test tasks
+```
+
+Open Django shell:
+
+```bash
+python manage.py shell
+```
+
+---
+
+## Documentation
+
+Additional information about the ORM implementation and database queries can be found in:
+
+```text
+QUERIES.md
+```
+
+The document explains:
+
+* Overdue task queries
+* Status aggregation
+* `select_related()`
+* `prefetch_related()`
+* Composite indexes
+* Query optimization reasoning
+
+---
+
+## Project Goal
+
+TaskFlow was built to demonstrate a complete Django task-management workflow while focusing on:
+
+* Correct relational data modeling
+* Secure backend permission enforcement
+* Efficient database queries
+* N+1 query prevention
+* Clean Django architecture
+* Modern and responsive UI/UX
+
+---
+
+## License
+
+This project is developed as an academic/project submission.
