@@ -73,70 +73,50 @@
   {% endif %}
 </div>
 
-<!-- Status count cards -->
-<div class="stat-grid fade-in">
-  <div class="stat-card stat-todo">
-    <div class="stat-card-label">
-      <span class="stat-card-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"/>
-        </svg>
-      </span>
-      To Do
-    </div>
-    <div class="stat-card-value">{{ counts_by_status.TODO|default:0 }}</div>
-  </div>
-  <div class="stat-card stat-ip">
-    <div class="stat-card-label">
-      <span class="stat-card-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/>
-        </svg>
-      </span>
-      In Progress
-    </div>
-    <div class="stat-card-value">{{ counts_by_status.IN_PROGRESS|default:0 }}</div>
-  </div>
-  <div class="stat-card stat-done">
-    <div class="stat-card-label">
-      <span class="stat-card-icon">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12l3 3 5-5"/>
-        </svg>
-      </span>
-      Done
-    </div>
-    <div class="stat-card-value">{{ counts_by_status.DONE|default:0 }}</div>
-  </div>
-</div>
-
-<!-- Overdue tasks for this project -->
-{% if overdue_tasks %}
-<div class="overdue-section fade-in">
-  <div class="overdue-header">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-    </svg>
-    {{ overdue_tasks|length }} overdue task{{ overdue_tasks|length|pluralize }}
-  </div>
-  <div class="overdue-list">
-    {% for task in overdue_tasks %}
-    <div class="overdue-task-card">
-      <a href="{% url 'tasks:task_detail' task.pk %}" class="overdue-task-title">{{ task.title }}</a>
-      <div class="overdue-task-meta">
-        {% if task.due_date %}Due {{ task.due_date }}{% endif %}
-        {% if task.assigned_to %} · Assigned to {{ task.assigned_to.username }}{% endif %}
-        · <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+<!-- Project stats card -->
+<div class="project-stats-card fade-in">
+  <div class="project-stats-row">
+    <div>
+      <div class="project-stat-label">Progress</div>
+      <div class="project-stat-progress-bar">
+        <div class="project-stat-progress-fill" style="width:{% widthratio counts_by_status.DONE|default:0 tasks|length 100 %}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span class="project-stat-sub">{{ counts_by_status.DONE|default:0 }} of {{ tasks|length }} tasks complete</span>
+        <span class="project-stat-pct">{% if tasks %}{% widthratio counts_by_status.DONE|default:0 tasks|length 100 %}%{% else %}0%{% endif %}</span>
       </div>
     </div>
-    {% endfor %}
+    <div>
+      <div class="project-stat-label">Team</div>
+      <div class="project-owner-chip">
+        <div class="project-member-stack">
+          <div class="member-avatar" style="background:#FFB81C;color:#181818">{{ project.owner.username|first }}</div>
+        </div>
+        <span style="font-size:0.85rem;color:var(--text-3);margin-left:8px">{{ tasks|length }} member{{ tasks|length|pluralize }}</span>
+      </div>
+    </div>
+    <div>
+      <div class="project-stat-label">Owner</div>
+      <div class="project-owner-chip">
+        <div class="project-owner-avatar" style="background:#FFB81C;color:#181818">{{ project.owner.username|first }}</div>
+        <div>
+          <div style="font-size:0.9rem;font-weight:600;color:var(--text-1);line-height:1.3">{{ project.owner.username }}</div>
+          <span class="badge badge-done" style="font-size:0.65rem;padding:2px 8px;margin-top:2px;display:inline-block">Owner</span>
+        </div>
+      </div>
+    </div>
   </div>
+  {% if overdue_tasks %}
+  <div class="project-overdue-alert">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ overdue_tasks|length }} overdue task{{ overdue_tasks|length|pluralize }} need{{ overdue_tasks|length|pluralize:'s,' }} attention
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 
-<!-- Task table -->
+<!-- Task rows -->
 <div class="fade-in">
   <div class="section-header" style="margin-bottom:14px">
     <h2 class="section-title">
@@ -148,40 +128,50 @@
     </h2>
   </div>
 
+  <div class="task-filter-tabs" id="taskTabs">
+    <button class="task-filter-tab active" onclick="filterTasks('all',this)">All</button>
+    <button class="task-filter-tab" onclick="filterTasks('todo',this)">To Do</button>
+    <button class="task-filter-tab" onclick="filterTasks('in_progress',this)">In Progress</button>
+    <button class="task-filter-tab" onclick="filterTasks('done',this)">Done</button>
+    {% if overdue_tasks %}
+    <button class="task-filter-tab" onclick="filterTasks('overdue',this)">
+      Overdue <span class="tab-count">{{ overdue_tasks|length }}</span>
+    </button>
+    {% endif %}
+  </div>
+
   {% if tasks %}
-  <div class="task-list">
+  <div class="task-rows-card">
     {% for task in tasks %}
-    <a href="{% url 'tasks:task_detail' task.pk %}" class="task-card status-{{ task.status|lower }} anim-{{ forloop.counter|add:0|slice:':1' }}">
-      <!-- Clickable completion control -->
-      <span class="task-status-control" title="Mark as done" onclick="completeTask('{% url 'tasks:task_edit' task.pk %}', event)">
+    <div class="task-row" data-status="{{ task.status|lower }}" data-due="{{ task.due_date }}">
+      <span class="task-row-check {% if task.status == 'DONE' %}check-done{% endif %}" onclick="completeTask('{% url 'tasks:task_edit' task.pk %}', event)">
         {% if task.status == 'DONE' %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
         {% endif %}
       </span>
-      
-      <div class="task-card-body">
-        <div class="task-card-title">{{ task.title }}</div>
-        <div class="task-card-meta">
-          {% if task.due_date %}
-          <span class="task-meta-chip">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-            </svg>
-            {{ task.due_date }}
-          </span>
-          {% endif %}
-          <span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
-          <span class="badge badge-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
-          
-          {% if task.assigned_to %}
-          <span class="task-meta-chip" style="margin-left:auto">
-            <span style="width:22px;height:22px;border-radius:50%;background:var(--border-light);display:inline-flex;align-items:center;justify-content:center;color:var(--text-1);font-size:0.65rem;font-weight:600;flex-shrink:0;text-transform:uppercase">{{ task.assigned_to.username|first }}</span>
-            {{ task.assigned_to.username }}
-          </span>
-          {% endif %}
-        </div>
+      <a href="{% url 'tasks:task_detail' task.pk %}" class="task-row-title {% if task.status == 'DONE' %}title-done{% endif %}">{{ task.title }}</a>
+      <span class="badge badge-{{ task.priority|lower }}" style="padding:4px 8px;font-size:0.65rem;letter-spacing:0;text-transform:capitalize">{{ task.get_priority_display }}</span>
+      {% if task.due_date %}
+      <span class="task-row-due">{{ task.due_date }}</span>
+      {% endif %}
+      <div class="task-row-meta">
+        {% if task.assigned_to %}
+        <div class="task-row-avatar" style="background:#3B82F6" title="{{ task.assigned_to.username }}">{{ task.assigned_to.username|first }}</div>
+        {% endif %}
+        {% with cc=task.comments.count %}
+        {% if cc %}
+        <span class="task-row-comments">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          {{ cc }}
+        </span>
+        {% endif %}
+        {% endwith %}
       </div>
-    </a>
+    </div>
     {% endfor %}
   </div>
 
@@ -210,4 +200,20 @@
   </div>
   {% endif %}
 </div>
+
+<script>
+function filterTasks(status, btn) {
+  document.querySelectorAll('.task-filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  var today = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.task-row').forEach(function(row){
+    var s = row.dataset.status;
+    var due = row.dataset.due || '';
+    var isOverdue = due && due < today && s !== 'done';
+    if (status === 'all') row.style.display = '';
+    else if (status === 'overdue') row.style.display = isOverdue ? '' : 'none';
+    else row.style.display = (s === status) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}

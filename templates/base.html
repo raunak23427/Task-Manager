@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css?v=2" />
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -26,8 +26,6 @@
 
   <!-- Navigation -->
   <nav class="sidebar-nav" aria-label="Main navigation">
-    <span class="nav-section-label">Menu</span>
-
     <a href="{% url 'tasks:dashboard' %}"
        class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -46,6 +44,7 @@
       Projects
     </a>
 
+
     {% if user.is_staff %}
     <a href="/admin/" class="nav-link">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -61,20 +60,21 @@
   <!-- User / Logout -->
   <div class="sidebar-footer">
     <div class="user-card">
-      <div class="user-avatar" aria-hidden="true">{{ user.username|first }}</div>
+      <div class="user-avatar" aria-hidden="true" style="{% if user.is_superuser %}background:#9333EA{% elif user.owned_projects.exists %}background:#FFB81C;color:#181818{% else %}background:#3B82F6{% endif %}">{{ user.username|first }}</div>
       <div class="user-info">
         <span class="user-name">{{ user.username }}</span>
-        <span class="user-email">{% if user.email %}{{ user.email }}{% else %}Signed in{% endif %}</span>
+        <span class="user-role-badge {% if user.is_superuser %}user-role-admin{% elif user.owned_projects.exists %}user-role-owner{% else %}user-role-member{% endif %}">
+          {% if user.is_superuser %}Admin{% elif user.owned_projects.exists %}Owner{% else %}Member{% endif %}
+        </span>
       </div>
     </div>
     <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
       {% csrf_token %}
-      <button type="submit" class="logout-btn">
+      <button type="submit" class="logout-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
         </svg>
-        Log out
+        Sign out
       </button>
     </form>
   </div>
