@@ -143,7 +143,7 @@
   {% if tasks %}
   <div class="task-rows-card">
     {% for task in tasks %}
-    <div class="task-row" data-status="{{ task.status|lower }}" data-due="{{ task.due_date }}">
+    <div class="task-row" data-status="{{ task.status|lower }}" data-due="{{ task.due_date|date:'Y-m-d' }}">
       <span class="task-row-check {% if task.status == 'DONE' %}check-done{% endif %}" onclick="completeTask('{% url 'tasks:task_edit' task.pk %}', event)">
         {% if task.status == 'DONE' %}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
