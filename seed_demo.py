@@ -52,21 +52,52 @@ p2, _ = Project.objects.get_or_create(
     },
 )
 
+p3, _ = Project.objects.get_or_create(
+    name="Q4 Marketing Campaign",
+    defaults={
+        "description": "Launch the new product features to our enterprise customers with targeted ads and email sequences.",
+        "owner": bob,
+    },
+)
+
+p4, _ = Project.objects.get_or_create(
+    name="Infrastructure Scaling",
+    defaults={
+        "description": "Migrate core databases to new clusters and upgrade message queues to handle increased load.",
+        "owner": admin,
+    },
+)
+
 print("==> Creating tasks...")
 today = date.today()
 
 tasks_data = [
-    # Website Redesign tasks
+    # Website Redesign tasks (Admin owned)
     dict(title="Design new homepage mockup",        status=Status.DONE,        priority=Priority.HIGH,   due_date=today - timedelta(days=10), project=p1, assigned_to=alice),
     dict(title="Set up CI/CD pipeline",             status=Status.DONE,        priority=Priority.MEDIUM, due_date=today - timedelta(days=5),  project=p1, assigned_to=bob),
     dict(title="Migrate blog to new CMS",           status=Status.IN_PROGRESS, priority=Priority.MEDIUM, due_date=today + timedelta(days=3),  project=p1, assigned_to=alice),
     dict(title="Write SEO meta tags for all pages", status=Status.TODO,        priority=Priority.LOW,    due_date=today + timedelta(days=7),  project=p1, assigned_to=bob),
     dict(title="Fix broken links audit",            status=Status.TODO,        priority=Priority.HIGH,   due_date=today - timedelta(days=2),  project=p1, assigned_to=admin),  # overdue!
-    # Mobile App tasks
+    
+    # Mobile App tasks (Alice owned)
     dict(title="User authentication flow",          status=Status.DONE,        priority=Priority.HIGH,   due_date=today - timedelta(days=14), project=p2, assigned_to=bob),
     dict(title="Push notification integration",     status=Status.IN_PROGRESS, priority=Priority.HIGH,   due_date=today - timedelta(days=1),  project=p2, assigned_to=alice),  # overdue!
     dict(title="Offline mode support",              status=Status.TODO,        priority=Priority.MEDIUM, due_date=today + timedelta(days=10), project=p2, assigned_to=admin),
     dict(title="App Store submission checklist",    status=Status.TODO,        priority=Priority.LOW,    due_date=today + timedelta(days=14), project=p2, assigned_to=alice),
+    dict(title="Dark mode UI implementation",       status=Status.IN_PROGRESS, priority=Priority.MEDIUM, due_date=today + timedelta(days=5),  project=p2, assigned_to=bob),
+    dict(title="Analytics event tracking",          status=Status.TODO,        priority=Priority.LOW,    due_date=today + timedelta(days=8),  project=p2, assigned_to=bob),
+
+    # Marketing Campaign tasks (Bob owned)
+    dict(title="Draft email announcement sequence", status=Status.DONE,        priority=Priority.HIGH,   due_date=today - timedelta(days=3),  project=p3, assigned_to=alice),
+    dict(title="Design social media assets",        status=Status.IN_PROGRESS, priority=Priority.MEDIUM, due_date=today + timedelta(days=2),  project=p3, assigned_to=bob),
+    dict(title="Configure ad targeting parameters", status=Status.TODO,        priority=Priority.HIGH,   due_date=today + timedelta(days=4),  project=p3, assigned_to=admin),
+    dict(title="Review campaign budget",            status=Status.IN_PROGRESS, priority=Priority.HIGH,   due_date=today - timedelta(days=2),  project=p3, assigned_to=bob), # overdue!
+    
+    # Infrastructure tasks (Admin owned)
+    dict(title="Audit current database IOPS",       status=Status.DONE,        priority=Priority.LOW,    due_date=today - timedelta(days=20), project=p4, assigned_to=admin),
+    dict(title="Provision new staging clusters",    status=Status.IN_PROGRESS, priority=Priority.HIGH,   due_date=today + timedelta(days=1),  project=p4, assigned_to=admin),
+    dict(title="Test failover mechanisms",          status=Status.TODO,        priority=Priority.HIGH,   due_date=today + timedelta(days=6),  project=p4, assigned_to=bob),
+    dict(title="Update disaster recovery docs",     status=Status.TODO,        priority=Priority.LOW,    due_date=today + timedelta(days=15), project=p4, assigned_to=alice),
 ]
 
 created_tasks = []

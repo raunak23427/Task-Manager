@@ -4,86 +4,102 @@
 {% block content %}
 <div class="auth-split">
   <!-- Left panel -->
-  <div class="auth-split-left">
-    <div class="auth-left-logo">
-      <div class="logo-mark">T</div>
-      <div style="display: flex; flex-direction: column;">
-        <span class="logo-text" style="line-height: 1;">TaskFlow</span>
-        <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase;">A RACE AI product</span>
+  <div class="auth-split-left" style="justify-content: space-between;">
+    <div>
+      <div class="auth-left-logo" style="margin-bottom: 56px;">
+        <div class="logo-mark">T</div>
+        <div style="display: flex; flex-direction: column;">
+          <span class="logo-text" style="line-height: 1.1; font-weight: 700;">TaskFlow</span>
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: rgba(255,255,255,0.45); font-weight: 600; margin-top: 2px; letter-spacing: 0.04em;">
+            BY RACE AI <img src="/static/img/race_ai_logo.png" style="height: 9px; filter: grayscale(1) opacity(0.6);" alt="">
+          </span>
+        </div>
       </div>
+      <h1 class="auth-left-heading" style="font-size: 2.75rem; letter-spacing: -0.03em;">Projects, tasks,<br><span class="accent">perfectly in sync.</span></h1>
+      <p class="auth-left-sub" style="font-size: 1.05rem; max-width: 90%;">Collaborate with your team, assign priorities, and ship great work &mdash; without the chaos.</p>
+      <ul class="auth-left-features" style="display: flex; flex-direction: column; gap: 8px;">
+        <li>
+          <span class="auth-feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          Visual project progress at a glance
+        </li>
+        <li>
+          <span class="auth-feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          Smart task assignment &amp; due dates
+        </li>
+        <li>
+          <span class="auth-feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          Real-time comments &amp; team collaboration
+        </li>
+      </ul>
     </div>
-    <h1 class="auth-left-heading">Projects, tasks,<br><span class="accent">perfectly in sync.</span></h1>
-    <p class="auth-left-sub">Collaborate with your team, assign priorities, and ship great work — without the chaos.</p>
-    <ul class="auth-left-features">
-      <li>
-        <span class="auth-feat-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        </span>
-        Visual project progress at a glance
-      </li>
-      <li>
-        <span class="auth-feat-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        </span>
-        Smart task assignment &amp; due dates
-      </li>
-      <li>
-        <span class="auth-feat-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        </span>
-        Real-time comments &amp; team collaboration
-      </li>
-    </ul>
 
+    <!-- Restored Testimonial -->
+    <div class="auth-testimonial" style="margin-top: 40px;">
+      <p class="auth-testimonial-text">"TaskFlow reduced our project delivery time by 40% in just one quarter."</p>
+      <p class="auth-testimonial-author">&mdash; Sarah K., Product Lead at Vertex Inc.</p>
+    </div>
   </div>
 
   <!-- Right panel -->
   <div class="auth-split-right">
     <div class="auth-form-panel">
-      <h2 class="auth-form-heading">Welcome back</h2>
-      <p class="auth-form-sub">Sign in to continue to your workspace.</p>
+      <div style="text-align: center; margin-bottom: 40px;">
+        <h2 class="auth-form-heading" style="font-size: 2.2rem;">Welcome back</h2>
+        <p class="auth-form-sub" style="margin-bottom: 0;">Sign in to continue to your workspace.</p>
+      </div>
 
       {% if form.non_field_errors %}
-      <div class="non-field-errors">
-        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      <div class="non-field-errors" style="margin-bottom: 24px; padding: 12px 16px; background: #FEF2F2; color: #B91C1C; border-radius: 8px; font-size: 0.9rem;">
+        {% for error in form.non_field_errors %}<p style="margin:0;">{{ error }}</p>{% endfor %}
       </div>
       {% endif %}
 
-      <form method="post" novalidate id="loginForm">
+      <form method="post" novalidate id="loginForm" style="display: flex; flex-direction: column; gap: 20px;">
         {% csrf_token %}
-        <div class="form-group">
+        <div class="form-group" style="margin: 0;">
           <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
           {{ form.username }}
-          {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          {% if form.username.errors %}<ul class="errorlist" style="color: #DC2626; font-size: 0.85rem; margin-top: 4px; list-style: none; padding: 0;">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin: 0;">
           <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
           {{ form.password }}
-          {% if form.password.errors %}<ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          {% if form.password.errors %}<ul class="errorlist" style="color: #DC2626; font-size: 0.85rem; margin-top: 4px; list-style: none; padding: 0;">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         </div>
-        <button type="submit" class="auth-submit-btn">Sign in</button>
+        <button type="submit" class="auth-submit-btn" style="margin-top: 8px;">Sign in</button>
       </form>
 
-      <p class="demo-accounts-label">Or try a demo account</p>
-      <div class="demo-accounts-grid">
-        <button class="demo-account-btn" onclick="fillDemo('alice','password123',this)" type="button">
-          <div class="demo-avatar" style="background:#FFB81C;color:#181818">AC</div>
-          <span class="demo-name">Alice</span>
+      <div style="display: flex; align-items: center; margin: 32px 0; color: var(--text-4);">
+        <div style="flex-grow: 1; height: 1px; background: var(--border-light);"></div>
+        <span style="padding: 0 16px; font-size: 0.85rem; font-weight: 500;">Or try a demo account</span>
+        <div style="flex-grow: 1; height: 1px; background: var(--border-light);"></div>
+      </div>
+
+      <div class="demo-accounts-grid" style="gap: 12px;">
+        <button class="demo-account-btn" onclick="fillDemo('alice','password123',this)" type="button" style="padding: 16px 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+          <div class="demo-avatar" style="background:#FFB81C;color:#181818;width:44px;height:44px;">AC</div>
+          <span class="demo-name" style="margin-top: 4px;">Alice</span>
           <span class="demo-role-tag demo-role-owner">Owner</span>
         </button>
-        <button class="demo-account-btn" onclick="fillDemo('bob','password123',this)" type="button">
-          <div class="demo-avatar" style="background:#3B82F6">BM</div>
-          <span class="demo-name">Bob</span>
+        <button class="demo-account-btn" onclick="fillDemo('bob','password123',this)" type="button" style="padding: 16px 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+          <div class="demo-avatar" style="background:#3B82F6;width:44px;height:44px;">BM</div>
+          <span class="demo-name" style="margin-top: 4px;">Bob</span>
           <span class="demo-role-tag demo-role-member">Member</span>
         </button>
-        <button class="demo-account-btn" onclick="fillDemo('admin','password123',this)" type="button">
-          <div class="demo-avatar" style="background:#9333EA">AU</div>
-          <span class="demo-name">Admin</span>
+        <button class="demo-account-btn" onclick="fillDemo('admin','password123',this)" type="button" style="padding: 16px 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+          <div class="demo-avatar" style="background:#9333EA;width:44px;height:44px;">AU</div>
+          <span class="demo-name" style="margin-top: 4px;">Admin</span>
           <span class="demo-role-tag demo-role-admin">Admin</span>
         </button>
       </div>
 
-      <div class="auth-register-link">
+      <div class="auth-register-link" style="margin-top: 40px;">
         New to TaskFlow? <a href="{% url 'accounts:register' %}">Create account</a>
       </div>
     </div>
