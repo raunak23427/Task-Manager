@@ -2,59 +2,56 @@
 {% block title %}Projects — TaskFlow{% endblock %}
 
 {% block content %}
-<div class="page-header fade-in">
+<div class="page-header fade-in" style="margin-bottom:16px">
   <div class="page-header-info">
     <h1>Projects</h1>
-    <p>Manage your projects and collaborate with teammates.</p>
+    <p>{{ projects|length }} project{{ projects|length|pluralize }} in your workspace</p>
   </div>
   <div class="page-header-actions">
     <a href="{% url 'tasks:project_create' %}" class="btn btn-primary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
-      New Project
+      New project
     </a>
   </div>
 </div>
 
+<div class="search-bar fade-in">
+  <svg class="search-bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+  </svg>
+  <input type="text" placeholder="Search projects..." id="projectSearch" oninput="filterProjects()" autocomplete="off" />
+</div>
+
 {% if projects %}
-<div class="project-grid">
+<div class="project-grid" id="projectGrid">
   {% for project in projects %}
-  <a href="{% url 'tasks:project_detail' project.pk %}" class="project-card anim-{{ forloop.counter|add:0 }} fade-in">
-    <div class="project-card-top">
-      <div>
-        <div class="project-card-name">{{ project.name }}</div>
-      </div>
-      <div class="project-card-icon" aria-hidden="true">
+  <a href="{% url 'tasks:project_detail' project.pk %}" class="project-card fade-in" data-name="{{ project.name|lower }}" data-desc="{{ project.description|lower }}" style="position:relative">
+    <div class="project-card-top" style="margin-bottom:12px">
+      <div class="project-card-icon" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;background:{% cycle '#FFF9E6' '#EEF2FF' '#E6F5F0' '#FDF4F4' '#F0F4FF' %};color:{% cycle '#D97706' '#4F46E5' '#159B7D' '#D94646' '#3B82F6' %}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 7a2 2 0 012-2h4.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0012.414 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
         </svg>
       </div>
     </div>
 
-    <p class="project-card-desc">
-      {% if project.description %}{{ project.description }}{% else %}No description provided.{% endif %}
-    </p>
+    <div class="project-card-name" style="font-size:1.1rem;font-weight:600;margin-bottom:6px">{{ project.name }}</div>
+    <p class="project-card-desc" style="margin-bottom:16px">{% if project.description %}{{ project.description }}{% else %}No description provided.{% endif %}</p>
+
+    {% with t=project.tasks.count d=project.tasks.filter %}
+    <div class="project-card-stats">
+      <span>0 of {{ t }} done</span>
+      <span class="project-card-pct">0%</span>
+    </div>
+    <div class="project-progress-bar"><div class="project-progress-fill" style="width:0%"></div></div>
+    {% endwith %}
 
     <div class="project-card-footer">
-      <span class="project-card-footer-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
-        </svg>
-        {{ project.owner.username }}
-      </span>
-      <span class="project-card-footer-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        {{ project.tasks.count }} task{{ project.tasks.count|pluralize }}
-      </span>
-      {% if project.owner == request.user %}
-      <span class="badge badge-done" style="font-size:0.68rem">Owner</span>
-      {% else %}
-      <span class="badge badge-todo" style="font-size:0.68rem">Member</span>
-      {% endif %}
+      <div class="project-member-stack">
+        <div class="member-avatar" style="background:#FFB81C;color:#181818">{{ project.owner.username|first }}</div>
+      </div>
+      <span style="font-size:0.82rem;color:var(--text-4)">{{ project.tasks.count }} task{{ project.tasks.count|pluralize }}</span>
     </div>
   </a>
   {% endfor %}
@@ -65,8 +62,7 @@
   <div class="empty-state">
     <div class="empty-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M3 7a2 2 0 012-2h4.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0012.414 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4.586a1 1 0 01.707.293l1.414 1.414A1 1 0 0012.414 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
       </svg>
     </div>
     <h2 class="empty-title">No projects yet</h2>
@@ -80,4 +76,24 @@
   </div>
 </div>
 {% endif %}
+
+<!-- RACE AI Footer Branding -->
+<div style="text-align: center; margin-top: 56px; margin-bottom: 24px; color: var(--text-4); font-size: 0.7rem; letter-spacing: 0.05em; font-weight: 500; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0.8;">
+  <span style="font-weight: 600; color: var(--text-3);">TaskFlow</span>
+  <span style="opacity: 0.4;">|</span>
+  A product by RACE AI
+  <img src="/static/img/race_ai_logo.png" alt="" style="height: 10px; margin-top: -1px; margin-left: 2px; filter: grayscale(1) opacity(0.5); border-radius: 1px;">
+</div>
+
+<script>
+function filterProjects() {
+  const q = document.getElementById('projectSearch').value.toLowerCase();
+  document.querySelectorAll('#projectGrid .project-card').forEach(function(card) {
+    const name = (card.dataset.name || '');
+    const desc = (card.dataset.desc || '');
+    card.style.display = (name.includes(q) || desc.includes(q)) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}
+

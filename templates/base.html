@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=2" />
+  <link rel="stylesheet" href="/static/css/style.css?v=5" />
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -21,7 +21,10 @@
   <!-- Logo -->
   <div class="sidebar-logo">
     <div class="logo-mark">T</div>
-    <span class="logo-text">TaskFlow</span>
+    <div style="display: flex; flex-direction: column;">
+      <span class="logo-text" style="line-height: 1;">TaskFlow</span>
+      <span style="font-size: 0.65rem; color: var(--text-4); font-weight: 600; margin-top: 4px; letter-spacing: 0.04em;">BY RACE AI</span>
+    </div>
   </div>
 
   <!-- Navigation -->
@@ -77,6 +80,12 @@
         Sign out
       </button>
     </form>
+    
+    <!-- RACE AI Sidebar Account Badge -->
+    <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between;">
+      <span style="font-size: 0.65rem; color: rgba(255,255,255,0.3); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">TaskFlow OS</span>
+      <img src="/static/img/race_ai_logo.png" alt="RACE AI" style="height: 10px; filter: grayscale(1) opacity(0.4); border-radius: 1px;">
+    </div>
   </div>
 </aside>
 
@@ -89,7 +98,10 @@
         <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
       </svg>
     </button>
-    <span class="mobile-brand">TaskFlow</span>
+    <span class="mobile-brand" style="display: flex; align-items: baseline; gap: 6px;">
+      TaskFlow
+      <span style="font-size: 0.65rem; color: var(--text-4); font-weight: 600; letter-spacing: 0.04em;">BY RACE AI</span>
+    </span>
   </header>
 
   {% if messages %}

@@ -2,53 +2,105 @@
 {% block title %}Sign In — TaskFlow{% endblock %}
 
 {% block content %}
-<main class="auth-page">
-  <div class="auth-card">
-    <!-- Brand -->
-    <div class="auth-brand">
+<div class="auth-split">
+  <!-- Left panel -->
+  <div class="auth-split-left">
+    <div class="auth-left-logo">
       <div class="logo-mark">T</div>
-      <span class="logo-text">TaskFlow</span>
-    </div>
-
-    <h1 class="auth-heading">Welcome back</h1>
-    <p class="auth-subheading">Sign in to continue to your workspace.</p>
-
-    {% if form.non_field_errors %}
-    <div class="non-field-errors">
-      {% for error in form.non_field_errors %}
-      <p>{{ error }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <form method="post" novalidate>
-      {% csrf_token %}
-
-      <div class="form-group">
-        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
-        {{ form.username }}
-        {% if form.username.errors %}
-        <ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
+      <div style="display: flex; flex-direction: column;">
+        <span class="logo-text" style="line-height: 1;">TaskFlow</span>
+        <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase;">A RACE AI product</span>
       </div>
-
-      <div class="form-group">
-        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
-        {{ form.password }}
-        {% if form.password.errors %}
-        <ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
-      </div>
-
-      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px">
-        Sign In
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      Don't have an account?
-      <a href="{% url 'accounts:register' %}">Create account</a>
+    </div>
+    <h1 class="auth-left-heading">Projects, tasks,<br><span class="accent">perfectly in sync.</span></h1>
+    <p class="auth-left-sub">Collaborate with your team, assign priorities, and ship great work — without the chaos.</p>
+    <ul class="auth-left-features">
+      <li>
+        <span class="auth-feat-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </span>
+        Visual project progress at a glance
+      </li>
+      <li>
+        <span class="auth-feat-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </span>
+        Smart task assignment &amp; due dates
+      </li>
+      <li>
+        <span class="auth-feat-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </span>
+        Real-time comments &amp; team collaboration
+      </li>
+    </ul>
+    <div class="auth-testimonial">
+      <p class="auth-testimonial-text">"TaskFlow reduced our project delivery time by 40% in just one quarter."</p>
+      <p class="auth-testimonial-author">— Sarah K., Product Lead at Vertex Inc.</p>
     </div>
   </div>
-</main>
+
+  <!-- Right panel -->
+  <div class="auth-split-right">
+    <div class="auth-form-panel">
+      <h2 class="auth-form-heading">Welcome back</h2>
+      <p class="auth-form-sub">Sign in to continue to your workspace.</p>
+
+      {% if form.non_field_errors %}
+      <div class="non-field-errors">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" novalidate id="loginForm">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+          {{ form.password }}
+          {% if form.password.errors %}<ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <button type="submit" class="auth-submit-btn">Sign in</button>
+      </form>
+
+      <p class="demo-accounts-label">Or try a demo account</p>
+      <div class="demo-accounts-grid">
+        <button class="demo-account-btn" onclick="fillDemo('alice','password123',this)" type="button">
+          <div class="demo-avatar" style="background:#FFB81C;color:#181818">AC</div>
+          <span class="demo-name">Alice</span>
+          <span class="demo-role-tag demo-role-owner">Owner</span>
+        </button>
+        <button class="demo-account-btn" onclick="fillDemo('bob','password123',this)" type="button">
+          <div class="demo-avatar" style="background:#3B82F6">BM</div>
+          <span class="demo-name">Bob</span>
+          <span class="demo-role-tag demo-role-member">Member</span>
+        </button>
+        <button class="demo-account-btn" onclick="fillDemo('admin','password123',this)" type="button">
+          <div class="demo-avatar" style="background:#9333EA">AU</div>
+          <span class="demo-name">Admin</span>
+          <span class="demo-role-tag demo-role-admin">Admin</span>
+        </button>
+      </div>
+
+      <div class="auth-register-link">
+        New to TaskFlow? <a href="{% url 'accounts:register' %}">Create account</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function fillDemo(username, password, btn) {
+  document.querySelectorAll('.demo-account-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  var form = document.getElementById('loginForm');
+  form.querySelector('[name=username]').value = username;
+  form.querySelector('[name=password]').value = password;
+}
+</script>
 {% endblock %}
+

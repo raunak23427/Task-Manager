@@ -12,7 +12,7 @@
 
 <!-- Summary stat cards -->
 <div class="stat-grid">
-  <div class="stat-card stat-todo anim-1 fade-in">
+  <div class="stat-card stat-todo anim-1 fade-in" onclick="document.getElementById('section-todo').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;">
     <div class="stat-card-label">
       <span class="stat-card-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -24,7 +24,7 @@
     <div class="stat-card-value">{{ todo_tasks|length }}</div>
   </div>
 
-  <div class="stat-card stat-ip anim-2 fade-in">
+  <div class="stat-card stat-ip anim-2 fade-in" onclick="document.getElementById('section-inprogress').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;">
     <div class="stat-card-label">
       <span class="stat-card-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -36,7 +36,7 @@
     <div class="stat-card-value">{{ in_progress_tasks|length }}</div>
   </div>
 
-  <div class="stat-card stat-done anim-3 fade-in">
+  <div class="stat-card stat-done anim-3 fade-in" onclick="document.getElementById('section-done').scrollIntoView({behavior: 'smooth'})" style="cursor: pointer;">
     <div class="stat-card-label">
       <span class="stat-card-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -75,7 +75,7 @@
 {% endif %}
 
 <!-- To Do -->
-<div class="task-section anim-4 fade-in">
+<div class="task-section anim-4 fade-in" id="section-todo">
   <div class="section-header">
     <h2 class="section-title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2.5">
@@ -122,7 +122,7 @@
 </div>
 
 <!-- In Progress -->
-<div class="task-section anim-5 fade-in">
+<div class="task-section anim-5 fade-in" id="section-inprogress">
   <div class="section-header">
     <h2 class="section-title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ip-fg)" stroke-width="2.5">
@@ -167,7 +167,7 @@
 </div>
 
 <!-- Done -->
-<div class="task-section anim-5 fade-in">
+<div class="task-section anim-5 fade-in" id="section-done">
   <div class="section-header">
     <h2 class="section-title">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--done-fg)" stroke-width="2.5">
@@ -219,4 +219,13 @@
   </div>
 </div>
 {% endif %}
+
+<!-- RACE AI Footer Branding -->
+<div style="text-align: center; margin-top: 56px; margin-bottom: 24px; color: var(--text-4); font-size: 0.7rem; letter-spacing: 0.05em; font-weight: 500; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0.8;">
+  <span style="font-weight: 600; color: var(--text-3);">TaskFlow</span>
+  <span style="opacity: 0.4;">|</span>
+  A product by RACE AI
+  <img src="/static/img/race_ai_logo.png" alt="" style="height: 10px; margin-top: -1px; margin-left: 2px; filter: grayscale(1) opacity(0.5); border-radius: 1px;">
+</div>
+
 {% endblock %}
