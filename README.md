@@ -626,3 +626,15 @@ TaskFlow was built to demonstrate a complete Django task-management workflow whi
 ## License
 
 This project is developed as an academic/project submission.
+
+
+---
+
+## Membership & Visibility Assumption
+
+As requested by the assignment, project visibility is restricted to authorized members. In this system, a **Project Member** is strictly defined as:
+
+1. The user who created/owns the project (Project.owner).
+2. Any user who has been assigned to at least one task within that project.
+
+Users who do not meet these criteria cannot view the project, its tasks, or its comments. A direct request to a project URL by an unauthorized user will securely return an HTTP 403 Forbidden response.
