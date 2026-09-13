@@ -1331,3 +1331,359 @@ select {
 }
 .logout-row:hover { color: rgba(255,255,255,0.85); }
 .logout-row svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ============================================================
+   ROLE BADGES - Sidebar user card
+   ============================================================ */
+.user-role-badge {
+  display: inline-block;
+  font-size: 0.65rem; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px;
+  text-transform: capitalize; letter-spacing: 0.02em;
+  margin-top: 2px; line-height: 1.4;
+}
+.user-role-owner { background: rgba(255,184,28,0.25); color: #FFB81C; }
+.user-role-member { background: rgba(59,130,246,0.2); color: #60A5FA; }
+.user-role-admin { background: rgba(147,51,234,0.2); color: #C084FC; }
+
+/* ============================================================
+   PROJECT CARD - Progress bar and member stack
+   ============================================================ */
+.project-progress-bar {
+  height: 5px;
+  background: var(--border-light);
+  border-radius: 999px; overflow: hidden;
+  margin: 4px 0 10px;
+}
+.project-progress-fill {
+  height: 100%; background: var(--primary);
+  border-radius: 999px; transition: width 0.4s ease;
+}
+.project-card-stats {
+  font-size: 0.82rem; color: var(--text-3);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2px;
+}
+.project-card-pct { font-weight: 600; color: var(--text-1); }
+.project-member-stack {
+  display: flex; align-items: center;
+}
+.project-member-stack .member-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700; color: #fff;
+  text-transform: uppercase;
+  margin-left: -8px; flex-shrink: 0;
+}
+.project-member-stack .member-avatar:first-child { margin-left: 0; }
+
+/* ============================================================
+   PROJECT DETAIL - Stats row
+   ============================================================ */
+.project-stats-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+}
+.project-stats-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 32px; align-items: start;
+  margin-bottom: 16px;
+}
+.project-stat-label {
+  font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-4); margin-bottom: 10px;
+}
+.project-stat-progress-bar {
+  height: 6px; background: var(--border-light);
+  border-radius: 999px; overflow: hidden;
+  margin: 8px 0 4px;
+}
+.project-stat-progress-fill {
+  height: 100%; background: var(--primary);
+  border-radius: 999px;
+}
+.project-stat-pct {
+  font-size: 0.9rem; font-weight: 600; color: var(--text-1);
+}
+.project-stat-sub {
+  font-size: 0.78rem; color: var(--text-4); margin-top: 2px;
+}
+.project-owner-chip {
+  display: flex; align-items: center; gap: 10px;
+}
+.project-owner-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: #fff;
+  flex-shrink: 0; text-transform: uppercase;
+}
+.project-overdue-alert {
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px; margin-top: 4px;
+  color: var(--ov-fg); font-size: 0.88rem; font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ============================================================
+   TASK FILTER TABS
+   ============================================================ */
+.task-filter-tabs {
+  display: flex; gap: 4px;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 4px; width: fit-content;
+}
+.task-filter-tab {
+  padding: 6px 16px; border-radius: var(--r-pill);
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--text-3); cursor: pointer;
+  border: none; background: none;
+  transition: all var(--t-fast) var(--ease);
+  white-space: nowrap; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.task-filter-tab:hover { color: var(--text-1); }
+.task-filter-tab.active {
+  background: var(--text-1); color: #fff;
+}
+.tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  background: var(--ov-fg); color: #fff;
+  border-radius: 999px; font-size: 0.7rem; font-weight: 700;
+}
+
+/* ============================================================
+   TASK ROWS (flat list in project detail)
+   ============================================================ */
+.task-rows-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+.task-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background var(--t-fast) var(--ease);
+}
+.task-row:last-child { border-bottom: none; }
+.task-row:hover { background: #F9F8F4; }
+.task-row-check {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--t-fast) var(--ease);
+  background: transparent;
+}
+.task-row-check:hover { border-color: var(--primary); }
+.task-row-check.check-done {
+  background: var(--done-fg); border-color: var(--done-fg);
+}
+.task-row-check svg { width: 11px; height: 11px; color: #fff; }
+.task-row-title {
+  flex: 1; font-size: 0.95rem; font-weight: 400; color: var(--text-1);
+  text-decoration: none; line-height: 1.4;
+}
+.task-row-title:hover { color: var(--primary); }
+.task-row-title.title-done {
+  text-decoration: line-through; color: var(--text-4);
+}
+.task-row-due {
+  font-size: 0.8rem; font-weight: 500;
+  white-space: nowrap; color: var(--text-4);
+}
+.task-row-due.due-overdue { color: var(--ov-fg); }
+.task-row-due.due-ok { color: var(--done-fg); }
+.task-row-meta {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.task-row-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; font-weight: 700; color: #fff;
+  text-transform: uppercase; flex-shrink: 0;
+}
+.task-row-comments {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 0.78rem; color: var(--text-4);
+}
+.task-row-comments svg { width: 13px; height: 13px; }
+.task-rows-empty {
+  padding: 48px 24px; text-align: center;
+  color: var(--text-4); font-size: 0.95rem;
+}
+
+/* ============================================================
+   AUTH SPLIT LAYOUT
+   ============================================================ */
+.auth-split {
+  display: flex; min-height: 100vh;
+}
+.auth-split-left {
+  width: 44%;
+  background: var(--sidebar-bg);
+  display: flex; flex-direction: column;
+  padding: 44px 48px;
+  position: relative; overflow: hidden; flex-shrink: 0;
+}
+.auth-split-right {
+  flex: 1; background: var(--page-bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px;
+}
+.auth-left-logo {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 64px;
+}
+.auth-left-heading {
+  font-size: 2.6rem; font-weight: 600;
+  color: #FFFDF8; line-height: 1.18;
+  letter-spacing: -0.02em; margin-bottom: 16px;
+}
+.auth-left-heading .accent { color: var(--primary); }
+.auth-left-sub {
+  font-size: 1rem; color: rgba(255,255,255,0.55);
+  line-height: 1.7; margin-bottom: 36px; font-weight: 400;
+}
+.auth-left-features { margin-bottom: 48px; }
+.auth-left-features li {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.92rem; color: rgba(255,255,255,0.72);
+  margin-bottom: 12px; font-weight: 400;
+}
+.auth-feat-check {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(255,184,28,0.18); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-feat-check svg { width: 12px; height: 12px; color: var(--primary); }
+.auth-testimonial {
+  margin-top: auto;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 20px 24px;
+}
+.auth-testimonial-text {
+  font-size: 0.88rem; color: rgba(255,255,255,0.78);
+  line-height: 1.65; font-style: italic; margin-bottom: 10px;
+}
+.auth-testimonial-author {
+  font-size: 0.78rem; color: rgba(255,255,255,0.45);
+}
+.auth-form-panel {
+  width: 100%; max-width: 420px;
+}
+.auth-form-heading {
+  font-size: 2rem; font-weight: 600; color: var(--text-1);
+  letter-spacing: -0.02em; margin-bottom: 8px;
+}
+.auth-form-sub {
+  font-size: 1rem; color: var(--text-3);
+  margin-bottom: 32px; font-weight: 400;
+}
+.auth-submit-btn {
+  width: 100%; padding: 14px;
+  background: var(--primary); color: #181818;
+  border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  margin-top: 10px;
+}
+.auth-submit-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.demo-accounts-label {
+  text-align: center; font-size: 0.82rem;
+  color: var(--text-4); margin: 20px 0 12px;
+}
+.demo-accounts-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.demo-account-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 12px 8px;
+  border-radius: 14px; border: 1.5px solid var(--border);
+  background: var(--surface); cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+  font-family: inherit;
+}
+.demo-account-btn:hover {
+  border-color: var(--primary); transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.demo-account-btn.selected { border-color: var(--primary); background: rgba(255,184,28,0.06); }
+.demo-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; color: #fff; text-transform: uppercase;
+}
+.demo-name { font-size: 0.85rem; font-weight: 500; color: var(--text-1); }
+.demo-role-tag {
+  font-size: 0.65rem; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px; text-transform: capitalize;
+}
+.demo-role-owner { background: rgba(255,184,28,0.15); color: #D97706; }
+.demo-role-member { background: rgba(59,130,246,0.15); color: #3B82F6; }
+.demo-role-admin { background: rgba(147,51,234,0.15); color: #9333EA; }
+.auth-register-link {
+  text-align: center; margin-top: 24px;
+  font-size: 0.9rem; color: var(--text-3);
+}
+.auth-register-link a { color: var(--text-1); font-weight: 600; }
+.auth-register-link a:hover { color: var(--primary); }
+@media (max-width: 900px) {
+  .auth-split-left { display: none; }
+  .auth-split-right { padding: 32px 24px; }
+}
+
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-bar {
+  position: relative; margin-bottom: 28px;
+}
+.search-bar-icon {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--text-4); pointer-events: none;
+  width: 18px; height: 18px;
+}
+.search-bar input {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px 16px 12px 44px;
+  font-size: 0.95rem; color: var(--text-1);
+  outline: none; font-family: inherit;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.search-bar input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+
+/* ============================================================
+   LOGOUT ROW
+   ============================================================ */
+.logout-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--r-md);
+  color: rgba(255,255,255,0.45); font-size: 0.88rem; font-weight: 400;
+  cursor: pointer; background: none; border: none;
+  font-family: inherit; width: 100%;
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  margin-top: 4px; text-align: left;
+}
+.logout-row:hover { color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.04); }
+.logout-row svg { width: 16px; height: 16px; flex-shrink: 0; }
+
